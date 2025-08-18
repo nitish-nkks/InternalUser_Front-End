@@ -1,0 +1,768 @@
+/* Profile Page Styles */
+.profilePageContainer {
+  padding: 0;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Top Section - Profile Header */
+.profileHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.profileHeader::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #1890ff, #722ed1, #fa8c16);
+}
+
+.profileHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex: 1;
+}
+
+.profilePictureContainer {
+  position: relative;
+  cursor: pointer;
+}
+
+.profilePicture {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  object-fit: cover;
+  transition: all 0.3s ease;
+}
+
+.profilePictureContainer:hover .profilePicture {
+  transform: scale(1.05);
+}
+
+.profilePictureOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(24, 144, 255, 0.8);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.profilePictureContainer:hover .profilePictureOverlay {
+  opacity: 1;
+}
+
+.cameraIcon {
+  color: white;
+  font-size: 24px;
+}
+
+.profileBasicInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profileName {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  color: #262626;
+  letter-spacing: -0.02em;
+}
+
+.profileDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profileDetailItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profileDetailIcon {
+  font-size: 16px;
+  color: #1890ff;
+}
+
+.profileDetailItem span {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.profileHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.editProfileButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #1890ff, #722ed1);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+.editProfileButton:hover {
+  background: linear-gradient(135deg, #0c7cd5, #531dab);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+}
+
+/* Status Toggle */
+.statusToggle {
+  display: flex;
+  align-items: center;
+}
+
+.toggleButton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 0;
+  transition: all 0.3s ease;
+}
+
+.toggleSlider {
+  position: relative;
+  width: 48px;
+  height: 24px;
+  background: #d9d9d9;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.toggleButton.active .toggleSlider {
+  background: #52c41a;
+}
+
+.toggleHandle {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggleButton.active .toggleHandle {
+  transform: translateX(24px);
+}
+
+.toggleLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.toggleButton.active .toggleLabel {
+  color: #52c41a;
+}
+
+/* Middle Section - Cards */
+.profileMiddleSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.profileCard {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: 24px 32px;
+  border-bottom: 1px solid #f0f0f0;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #262626;
+}
+
+.cardIcon {
+  font-size: 24px;
+  color: #1890ff;
+}
+
+.cardContent {
+  padding: 32px;
+}
+
+/* Personal Info Styles */
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.infoLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8c8c8c;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.infoIcon {
+  font-size: 14px;
+  color: #1890ff;
+}
+
+.infoValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Account Settings Styles */
+.settingsGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settingItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.settingItem:last-child {
+  border-bottom: none;
+}
+
+.settingInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.settingLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.settingIcon {
+  font-size: 16px;
+  color: #1890ff;
+}
+
+.settingDescription {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.settingButton {
+  padding: 8px 16px;
+  background: rgba(24, 144, 255, 0.1);
+  color: #1890ff;
+  border: 1px solid rgba(24, 144, 255, 0.3);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.settingButton:hover {
+  background: rgba(24, 144, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.settingToggle {
+  display: flex;
+  align-items: center;
+}
+
+/* Notification Toggles */
+.notificationToggles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.notificationItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.notificationLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+}
+
+.toggleButton.small {
+  gap: 8px;
+}
+
+.toggleButton.small .toggleSlider {
+  width: 36px;
+  height: 18px;
+  border-radius: 9px;
+}
+
+.toggleButton.small .toggleHandle {
+  width: 14px;
+  height: 14px;
+  top: 2px;
+  left: 2px;
+}
+
+.toggleButton.small.active .toggleHandle {
+  transform: translateX(18px);
+}
+
+/* Activity Section */
+.activitySection {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.activityHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  border-bottom: 1px solid #f0f0f0;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.activityTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #262626;
+}
+
+.activityIcon {
+  font-size: 24px;
+  color: #1890ff;
+}
+
+.activitySearchBar {
+  position: relative;
+  width: 300px;
+}
+
+.activitySearchBar input {
+  width: 100%;
+  padding: 10px 40px 10px 16px;
+  border: 2px solid #e8e8e8;
+  border-radius: 12px;
+  font-size: 14px;
+  background: white;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.activitySearchBar input:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.12);
+}
+
+.searchIcon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #bfbfbf;
+  font-size: 16px;
+  pointer-events: none;
+}
+
+/* Activity Table */
+.activityTableContainer {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.activityTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+.activityTableHeader {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 2px solid #e8e8e8;
+}
+
+.activityTableHeader th {
+  padding: 16px 20px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.activityTableHeader th:nth-child(1) {
+  width: 20%;
+  min-width: 180px;
+}
+
+.activityTableHeader th:nth-child(2) {
+  width: 30%;
+  min-width: 220px;
+}
+
+.activityTableHeader th:nth-child(3) {
+  width: 40%;
+  min-width: 300px;
+}
+
+.activityTableHeader th:nth-child(4) {
+  width: 10%;
+  min-width: 100px;
+}
+
+.activityTableRow {
+  border-bottom: 1px solid rgba(240, 240, 240, 0.8);
+  transition: all 0.2s ease;
+}
+
+.activityTableRow:hover {
+  background: rgba(24, 144, 255, 0.04);
+}
+
+.activityTableCell {
+  padding: 16px 20px;
+  vertical-align: middle;
+}
+
+.activityDate {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dateTime {
+  font-size: 13px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.relativeTime {
+  font-size: 11px;
+  color: #8c8c8c;
+}
+
+.activityInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.activityTypeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.activityName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.activityDescription {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.activityType {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid currentColor;
+  opacity: 0.8;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 32px;
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.paginationInfo {
+  font-size: 14px;
+  color: #666;
+}
+
+.paginationControls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.paginationButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  background: white;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background: #1890ff;
+  color: white;
+  border-color: #1890ff;
+}
+
+.paginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginationButton.active {
+  background: #1890ff;
+  color: white;
+  border-color: #1890ff;
+}
+
+/* No Results */
+.noResults {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.noResultsIcon {
+  margin-bottom: 16px;
+  opacity: 0.6;
+  color: #1890ff;
+}
+
+.noResultsTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 8px;
+}
+
+.noResultsSubtitle {
+  font-size: 14px;
+  color: #8c8c8c;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .profileMiddleSection {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .infoGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .profileHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+    padding: 24px;
+  }
+  
+  .profileHeaderLeft {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  
+  .profileName {
+    font-size: 24px;
+  }
+  
+  .profilePicture {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .activityHeader {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+    padding: 20px;
+  }
+  
+  .activitySearchBar {
+    width: 100%;
+  }
+  
+  .cardContent {
+    padding: 20px;
+  }
+  
+  .settingItem {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 16px 0;
+  }
+  
+  .notificationToggles {
+    flex-direction: row;
+    justify-content: space-between;
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .pagination {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+    padding: 16px;
+  }
+  
+  .paginationControls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .profilePageContainer {
+    gap: 16px;
+  }
+  
+  .profileHeader {
+    padding: 16px;
+  }
+  
+  .cardHeader {
+    padding: 16px 20px;
+  }
+  
+  .cardTitle {
+    font-size: 18px;
+  }
+  
+  .cardContent {
+    padding: 16px;
+  }
+  
+  .activityTableContainer {
+    overflow-x: auto;
+  }
+  
+  .activityTable {
+    min-width: 700px;
+  }
+  
+  .activityTableCell {
+    padding: 12px 16px;
+  }
+}

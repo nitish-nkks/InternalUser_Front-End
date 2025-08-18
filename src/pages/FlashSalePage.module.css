@@ -1,0 +1,659 @@
+/* Flash Sale Page Styles */
+.flashSalePageContainer {
+  padding: 0;
+  background: transparent;
+}
+
+.flashSalePageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.flashSaleHeaderLeft {
+  flex: 1;
+}
+
+.flashSalePageTitle {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #262626;
+  letter-spacing: -0.02em;
+}
+
+.flashSalePageSubtitle {
+  margin: 4px 0 0 0;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Top Bar Styles */
+.flashSaleTopBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.flashSaleSearchAndFilters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.flashSaleTopBarActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.flashSaleFilterSelect,
+.flashSaleSortSelect {
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  padding: 8px 12px;
+  font-size: 14px;
+  background: white;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 140px;
+}
+
+.flashSaleFilterSelect:hover,
+.flashSaleSortSelect:hover {
+  border-color: #1890ff;
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.1);
+}
+
+.flashSaleFilterSelect:focus,
+.flashSaleSortSelect:focus {
+  outline: none;
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.12);
+}
+
+.flashSaleSearchBar {
+  width: 350px;
+  position: relative;
+}
+
+.flashSaleSearchBar input {
+  width: 100%;
+  border-radius: 14px !important;
+  border: 2px solid #e8e8e8 !important;
+  padding: 12px 44px 12px 16px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  background: linear-gradient(135deg, #fff 0%, #fafafa 100%) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  outline: none !important;
+}
+
+.flashSaleSearchBar input::placeholder {
+  color: #bfbfbf !important;
+  font-weight: 400 !important;
+}
+
+.searchIcon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #bfbfbf;
+  font-size: 16px;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.flashSaleSearchBar input:hover {
+  border-color: #d9d9d9 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+.flashSaleSearchBar input:focus {
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 4px rgba(24, 144, 255, 0.12) !important;
+  background: #fff !important;
+}
+
+.flashSaleSearchBar:focus-within .searchIcon {
+  color: #1890ff;
+}
+
+.flashSaleAddButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  height: 44px;
+  padding: 0 20px;
+  font-size: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #fa8c16, #ff4d4f);
+  border: none;
+  color: white;
+  box-shadow: 0 4px 12px rgba(250, 140, 22, 0.3);
+  cursor: pointer;
+}
+
+.flashSaleAddButton:hover {
+  background: linear-gradient(135deg, #e8770e, #e6393b);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(250, 140, 22, 0.4);
+}
+
+/* Table Styles */
+.flashSaleTableContainer {
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.flashSaleTable {
+  width: 100%;
+  min-width: 1500px;
+  border-collapse: collapse;
+}
+
+.flashSaleTableHeader {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 2px solid #e8e8e8;
+}
+
+.flashSaleTableHeader th {
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* Column width specifications */
+.flashSaleTableHeader th:nth-child(1) {
+  width: 18%;
+  min-width: 200px;
+}
+
+.flashSaleTableHeader th:nth-child(2) {
+  width: 20%;
+  min-width: 220px;
+}
+
+.flashSaleTableHeader th:nth-child(3) {
+  width: 10%;
+  min-width: 100px;
+  text-align: center;
+}
+
+.flashSaleTableHeader th:nth-child(4) {
+  width: 12%;
+  min-width: 140px;
+}
+
+.flashSaleTableHeader th:nth-child(5) {
+  width: 12%;
+  min-width: 140px;
+}
+
+.flashSaleTableHeader th:nth-child(6) {
+  width: 10%;
+  min-width: 100px;
+  text-align: center;
+}
+
+.flashSaleTableHeader th:nth-child(7) {
+  width: 12%;
+  min-width: 130px;
+  text-align: center;
+}
+
+.flashSaleTableHeader th:nth-child(8) {
+  width: 8%;
+  min-width: 100px;
+  text-align: center;
+  position: sticky;
+  right: 0;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  z-index: 10;
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.sortableColumn {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.sortableColumn:hover {
+  background: rgba(24, 144, 255, 0.05);
+}
+
+.sortIcon {
+  margin-left: 4px;
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.flashSaleTableRow {
+  border-bottom: 1px solid rgba(240, 240, 240, 0.8);
+  transition: all 0.2s ease;
+}
+
+.flashSaleTableRow:hover {
+  background: rgba(24, 144, 255, 0.04);
+}
+
+.flashSaleTableCell {
+  padding: 16px 12px;
+  vertical-align: middle;
+}
+
+/* Cell alignment specifications */
+.flashSaleTableCell:nth-child(3) {
+  text-align: center;
+}
+
+.flashSaleTableCell:nth-child(6) {
+  text-align: center;
+}
+
+.flashSaleTableCell:nth-child(7) {
+  text-align: center;
+}
+
+.flashSaleTableCell:nth-child(8) {
+  text-align: center;
+  position: sticky;
+  right: 0;
+  background: white;
+  z-index: 5;
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.flashSaleTableRow:hover .flashSaleTableCell:nth-child(8) {
+  background: #f0f8ff;
+}
+
+/* Sale Name Cell */
+.saleNameCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.saleName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #262626;
+  font-size: 14px;
+}
+
+.saleIcon {
+  color: #fa8c16;
+  font-size: 16px;
+}
+
+.remainingTime {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #ff4d4f;
+  font-weight: 600;
+  background: rgba(255, 77, 79, 0.1);
+  padding: 2px 6px;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+/* Products Included */
+.productsIncluded {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.productCount {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1890ff;
+  background: rgba(24, 144, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.productList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.productItem {
+  font-size: 11px;
+  color: #666;
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+.moreProducts {
+  font-size: 11px;
+  color: #8c8c8c;
+  font-style: italic;
+  padding: 2px 6px;
+}
+
+/* Discount Badge */
+.discountBadge {
+  background: linear-gradient(135deg, #fa8c16, #ff4d4f);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(250, 140, 22, 0.3);
+  display: inline-block;
+}
+
+/* Date Time */
+.dateTime {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Status Badges */
+.statusBadge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+}
+
+.statusActive {
+  background: rgba(82, 196, 26, 0.1);
+  color: #52c41a;
+  border: 1px solid rgba(82, 196, 26, 0.3);
+}
+
+.statusInactive {
+  background: rgba(255, 77, 79, 0.1);
+  color: #ff4d4f;
+  border: 1px solid rgba(255, 77, 79, 0.3);
+}
+
+.statusScheduled {
+  background: rgba(24, 144, 255, 0.1);
+  color: #1890ff;
+  border: 1px solid rgba(24, 144, 255, 0.3);
+}
+
+.statusExpired {
+  background: rgba(140, 140, 140, 0.1);
+  color: #8c8c8c;
+  border: 1px solid rgba(140, 140, 140, 0.3);
+}
+
+/* Performance Stats */
+.performanceStats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+}
+
+.statItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+}
+
+.statLabel {
+  color: #8c8c8c;
+  font-weight: 500;
+}
+
+.statValue {
+  color: #262626;
+  font-weight: 600;
+}
+
+.revenueValue {
+  color: #52c41a;
+  font-weight: 700;
+}
+
+/* Actions */
+.flashSaleActions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.flashSaleActionButton {
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+}
+
+.flashSaleEditButton {
+  background: rgba(24, 144, 255, 0.1);
+  color: #1890ff;
+  border-color: rgba(24, 144, 255, 0.3);
+}
+
+.flashSaleEditButton:hover {
+  background: rgba(24, 144, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.flashSaleDeleteButton {
+  background: rgba(255, 77, 79, 0.1);
+  color: #ff4d4f;
+  border-color: rgba(255, 77, 79, 0.3);
+}
+
+.flashSaleDeleteButton:hover {
+  background: rgba(255, 77, 79, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: #f8f9fa;
+  border-top: 1px solid #e8e8e8;
+}
+
+.paginationInfo {
+  font-size: 14px;
+  color: #666;
+}
+
+.paginationControls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.paginationButton {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  background: white;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background: #1890ff;
+  color: white;
+  border-color: #1890ff;
+}
+
+.paginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginationButton.active {
+  background: #1890ff;
+  color: white;
+  border-color: #1890ff;
+}
+
+/* No Results */
+.noResults {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.noResultsIcon {
+  margin-bottom: 16px;
+  opacity: 0.6;
+  color: #fa8c16;
+}
+
+.noResultsTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 8px;
+}
+
+.noResultsSubtitle {
+  font-size: 14px;
+  color: #8c8c8c;
+  margin-bottom: 24px;
+}
+
+.noResultsButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #fa8c16, #ff4d4f);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(250, 140, 22, 0.3);
+}
+
+.noResultsButton:hover {
+  background: linear-gradient(135deg, #e8770e, #e6393b);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(250, 140, 22, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .flashSalePageHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  
+  .flashSaleTopBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  
+  .flashSaleSearchAndFilters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .flashSaleSearchBar {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .flashSalePageTitle {
+    font-size: 24px;
+  }
+  
+  .flashSaleTableContainer {
+    overflow-x: auto;
+  }
+  
+  .flashSaleTable {
+    min-width: 1700px;
+  }
+  
+  .flashSaleActions {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .pagination {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .saleNameCell {
+    min-width: 180px;
+  }
+  
+  .productsIncluded {
+    min-width: 200px;
+  }
+}

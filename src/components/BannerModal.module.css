@@ -1,0 +1,479 @@
+/* Banner Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: modalAppear 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 32px;
+  border-bottom: 1px solid #f0f0f0;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.modalTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #262626;
+}
+
+.modalIcon {
+  font-size: 28px;
+  color: #1890ff;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  background: rgba(255, 77, 79, 0.1);
+  color: #ff4d4f;
+}
+
+.modalBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px;
+}
+
+/* Form Styles */
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.imageUploadGroup {
+  grid-column: 1 / -1;
+}
+
+.formLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.labelIcon {
+  font-size: 16px;
+  color: #1890ff;
+}
+
+.formInput,
+.formSelect {
+  padding: 12px 16px;
+  border: 2px solid #e8e8e8;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  color: #262626;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.formInput:hover,
+.formSelect:hover {
+  border-color: #d9d9d9;
+}
+
+.formInput:focus,
+.formSelect:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.12);
+}
+
+.formInput.error,
+.formSelect.error {
+  border-color: #ff4d4f;
+}
+
+.formInput::placeholder {
+  color: #bfbfbf;
+}
+
+.formSelect {
+  cursor: pointer;
+}
+
+.errorText {
+  font-size: 12px;
+  color: #ff4d4f;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* Image Upload Styles */
+.imagePreviewContainer {
+  position: relative;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 300px;
+}
+
+.imagePreview {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid #e8e8e8;
+}
+
+.imageOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.imagePreviewContainer:hover .imageOverlay {
+  opacity: 1;
+}
+
+.previewIcon {
+  color: white;
+  font-size: 24px;
+}
+
+.uploadArea {
+  border: 2px dashed #d9d9d9;
+  border-radius: 12px;
+  padding: 32px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #fafafa;
+}
+
+.uploadArea:hover {
+  border-color: #1890ff;
+  background: rgba(24, 144, 255, 0.02);
+}
+
+.uploadArea.dragOver {
+  border-color: #1890ff;
+  background: rgba(24, 144, 255, 0.05);
+  transform: scale(1.02);
+}
+
+.uploadArea.error {
+  border-color: #ff4d4f;
+  background: rgba(255, 77, 79, 0.02);
+}
+
+.uploadContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.uploadIcon {
+  font-size: 48px;
+  color: #d9d9d9;
+  transition: all 0.3s ease;
+}
+
+.uploadArea:hover .uploadIcon {
+  color: #1890ff;
+}
+
+.uploadText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.uploadTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.uploadSubtitle {
+  font-size: 14px;
+  color: #8c8c8c;
+}
+
+.uploadFormats {
+  font-size: 12px;
+  color: #bfbfbf;
+  margin-top: 4px;
+}
+
+.hiddenFileInput {
+  display: none;
+}
+
+/* URL Input */
+.urlInputContainer {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.urlInputLabel {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.urlInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  font-size: 13px;
+  background: white;
+  color: #262626;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.urlInput:hover {
+  border-color: #d9d9d9;
+}
+
+.urlInput:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.12);
+}
+
+/* Status Toggle */
+.statusToggle {
+  display: flex;
+  align-items: center;
+}
+
+.toggleButton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 0;
+  transition: all 0.3s ease;
+}
+
+.toggleSlider {
+  position: relative;
+  width: 48px;
+  height: 24px;
+  background: #d9d9d9;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.toggleButton.active .toggleSlider {
+  background: #52c41a;
+}
+
+.toggleHandle {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggleButton.active .toggleHandle {
+  transform: translateX(24px);
+}
+
+.toggleLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.toggleButton.active .toggleLabel {
+  color: #52c41a;
+}
+
+/* Modal Footer */
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 24px 32px;
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.modalButton {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  min-width: 120px;
+}
+
+.cancelButton {
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #d9d9d9;
+}
+
+.cancelButton:hover {
+  background: #e6f7ff;
+  color: #1890ff;
+  border-color: #91d5ff;
+}
+
+.saveButton {
+  background: linear-gradient(135deg, #1890ff, #52c41a);
+  color: white;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+.saveButton:hover {
+  background: linear-gradient(135deg, #0e7ae4, #47b318);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modalOverlay {
+    padding: 10px;
+  }
+  
+  .modalContent {
+    max-width: 100%;
+    max-height: 95vh;
+  }
+  
+  .modalHeader {
+    padding: 20px;
+  }
+  
+  .modalBody {
+    padding: 20px;
+  }
+  
+  .modalTitle {
+    font-size: 20px;
+  }
+  
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .uploadArea {
+    padding: 24px 16px;
+  }
+  
+  .uploadIcon {
+    font-size: 36px;
+  }
+  
+  .modalFooter {
+    padding: 20px;
+    flex-direction: column;
+  }
+  
+  .modalButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalHeader {
+    padding: 16px;
+  }
+  
+  .modalBody {
+    padding: 16px;
+  }
+  
+  .modalFooter {
+    padding: 16px;
+  }
+  
+  .uploadArea {
+    padding: 20px 12px;
+  }
+}

@@ -1,0 +1,452 @@
+/* Edit Profile Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: modalAppear 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 32px;
+  border-bottom: 1px solid #f0f0f0;
+  background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
+  color: white;
+}
+
+.modalTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+}
+
+.modalIcon {
+  font-size: 28px;
+  color: white;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.modalBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px;
+}
+
+/* Profile Picture Section */
+.profilePictureSection {
+  margin-bottom: 32px;
+}
+
+.sectionLabel {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 16px;
+}
+
+.profilePictureContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.imagePreviewContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.imagePreview {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+}
+
+.imageOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(24, 144, 255, 0.8);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  opacity: 0;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.imagePreviewContainer:hover .imageOverlay {
+  opacity: 1;
+}
+
+.changeImageButton,
+.removeImageButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1890ff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+}
+
+.changeImageButton:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.removeImageButton {
+  color: #ff4d4f;
+}
+
+.removeImageButton:hover {
+  background: white;
+  transform: scale(1.1);
+  color: #ff4d4f;
+}
+
+.uploadArea {
+  width: 150px;
+  height: 150px;
+  border: 2px dashed #d9d9d9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #fafafa;
+}
+
+.uploadArea:hover {
+  border-color: #1890ff;
+  background: rgba(24, 144, 255, 0.04);
+}
+
+.uploadArea.dragOver {
+  border-color: #1890ff;
+  background: rgba(24, 144, 255, 0.08);
+  transform: scale(1.05);
+}
+
+.uploadArea.error {
+  border-color: #ff4d4f;
+  background: rgba(255, 77, 79, 0.04);
+}
+
+.uploadContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  padding: 16px;
+}
+
+.uploadIcon {
+  font-size: 32px;
+  color: #1890ff;
+  margin-bottom: 8px;
+}
+
+.uploadText {
+  font-size: 12px;
+  font-weight: 600;
+  color: #262626;
+  line-height: 1.4;
+}
+
+.uploadSubtext {
+  font-size: 10px;
+  color: #8c8c8c;
+  line-height: 1.3;
+}
+
+.hiddenFileInput {
+  display: none;
+}
+
+/* Form Styles */
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formGroup.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.formLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.labelIcon {
+  font-size: 16px;
+  color: #1890ff;
+}
+
+.formInput {
+  padding: 12px 16px;
+  border: 2px solid #e8e8e8;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  color: #262626;
+  transition: all 0.3s ease;
+  outline: none;
+  font-family: inherit;
+}
+
+.formInput:hover {
+  border-color: #d9d9d9;
+}
+
+.formInput:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.12);
+}
+
+.formInput.error {
+  border-color: #ff4d4f;
+}
+
+.formInput::placeholder {
+  color: #bfbfbf;
+}
+
+.textArea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+}
+
+.errorText {
+  font-size: 12px;
+  color: #ff4d4f;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* Modal Footer */
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 24px 32px;
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.modalButton {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  min-width: 140px;
+}
+
+.cancelButton {
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #d9d9d9;
+}
+
+.cancelButton:hover {
+  background: #e6f7ff;
+  color: #1890ff;
+  border-color: #91d5ff;
+}
+
+.saveButton {
+  background: linear-gradient(135deg, #1890ff, #722ed1);
+  color: white;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+.saveButton:hover {
+  background: linear-gradient(135deg, #0c7cd5, #531dab);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modalOverlay {
+    padding: 10px;
+  }
+  
+  .modalContent {
+    max-width: 100%;
+    max-height: 95vh;
+  }
+  
+  .modalHeader {
+    padding: 20px;
+  }
+  
+  .modalBody {
+    padding: 20px;
+  }
+  
+  .modalTitle {
+    font-size: 20px;
+  }
+  
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .profilePictureSection {
+    margin-bottom: 24px;
+  }
+  
+  .imagePreview {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .uploadArea {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .modalFooter {
+    padding: 20px;
+    flex-direction: column;
+  }
+  
+  .modalButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalHeader {
+    padding: 16px;
+  }
+  
+  .modalBody {
+    padding: 16px;
+  }
+  
+  .modalFooter {
+    padding: 16px;
+  }
+  
+  .imagePreview {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .uploadArea {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .uploadContent {
+    padding: 12px;
+    gap: 6px;
+  }
+  
+  .uploadIcon {
+    font-size: 24px;
+  }
+  
+  .uploadText {
+    font-size: 10px;
+  }
+  
+  .uploadSubtext {
+    font-size: 9px;
+  }
+}

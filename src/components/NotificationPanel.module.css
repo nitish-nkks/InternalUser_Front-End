@@ -1,0 +1,810 @@
+/* Enhanced Notification Panel Styles */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 9998;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+}
+
+.overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 420px;
+  height: 100vh;
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 1px solid rgba(240, 240, 240, 0.8);
+}
+
+.panel.open {
+  transform: translateX(0);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28px 32px;
+  border-bottom: 1px solid rgba(240, 240, 240, 0.8);
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #1890ff, #52c41a);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.02em;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clearAllButton {
+  background: rgba(255, 77, 79, 0.08);
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff4d4f;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 36px;
+  height: 36px;
+  font-size: 14px;
+}
+
+.clearAllButton:hover {
+  background: rgba(255, 77, 79, 0.15);
+  color: #e6393b;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 77, 79, 0.2);
+}
+
+.closeButton {
+  background: rgba(140, 140, 140, 0.08);
+  border: none;
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8c8c8c;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+}
+
+.closeButton:hover {
+  background: rgba(255, 77, 79, 0.1);
+  color: #ff4d4f;
+  transform: scale(1.05) rotate(90deg);
+  box-shadow: 0 4px 12px rgba(255, 77, 79, 0.2);
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 0 24px 0;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(24, 144, 255, 0.3) transparent;
+}
+
+.content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.6), rgba(82, 196, 26, 0.6));
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #1890ff, #52c41a);
+}
+
+.notificationCard {
+  margin: 8px 24px 12px 24px;
+  padding: 20px;
+  border: 1px solid rgba(240, 240, 240, 0.6);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  background: linear-gradient(135deg, #fff 0%, #fafafa 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.notificationCard:hover {
+  background: linear-gradient(135deg, #fff 0%, #f0f7ff 100%);
+  border-color: rgba(24, 144, 255, 0.3);
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 8px 24px rgba(24, 144, 255, 0.1);
+}
+
+.notificationCard:last-child {
+  margin-bottom: 16px;
+}
+
+.notificationCard.unread {
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.08) 0%, rgba(82, 196, 26, 0.04) 100%);
+  border: 1px solid rgba(24, 144, 255, 0.3);
+  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.1);
+  position: relative;
+}
+
+.notificationCard.unread::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(135deg, #1890ff, #52c41a);
+  border-radius: 2px 0 0 2px;
+}
+
+.notificationCard.unread:hover {
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.12) 0%, rgba(82, 196, 26, 0.06) 100%);
+  border-color: rgba(24, 144, 255, 0.4);
+  box-shadow: 0 8px 24px rgba(24, 144, 255, 0.15);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #262626;
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  margin-right: 8px;
+  letter-spacing: -0.01em;
+}
+
+.unreadBadge {
+  width: 12px;
+  height: 12px;
+  background: linear-gradient(135deg, #1890ff, #52c41a);
+  border-radius: 50%;
+  margin-left: 12px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  box-shadow: 0 2px 6px rgba(24, 144, 255, 0.4);
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.8; }
+}
+
+.cardDescription {
+  font-size: 14px;
+  color: #666;
+  margin: 8px 0 12px 0;
+  line-height: 1.5;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardTime {
+  font-size: 13px;
+  color: #8c8c8c;
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #8c8c8c;
+  padding: 40px 24px;
+  text-align: center;
+  background: radial-gradient(circle at center, rgba(24, 144, 255, 0.03) 0%, transparent 70%);
+  border-radius: 20px;
+  margin: 20px 24px;
+  border: 1px dashed rgba(24, 144, 255, 0.2);
+}
+
+.emptyState .icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.6), rgba(82, 196, 26, 0.6));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0.8;
+}
+
+.emptyState .title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #666;
+  letter-spacing: -0.01em;
+}
+
+.emptyState .description {
+  font-size: 14px;
+  color: #8c8c8c;
+}
+
+.actionButton {
+  margin: 16px 24px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #1890ff, #52c41a);
+  border: none;
+  border-radius: 16px;
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.actionButton:hover {
+  background: linear-gradient(135deg, #0e7ae4, #47b318);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(24, 144, 255, 0.4);
+}
+
+.actionButton:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.3);
+}
+
+.priorityIndicator {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  border-bottom-left-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.priorityHigh {
+  background: #ff4d4f;
+}
+
+.priorityCritical {
+  background: #ff1f1f;
+  animation: pulse 2s infinite;
+}
+
+.priorityMedium {
+  background: #faad14;
+}
+
+.priorityLow {
+  background: #52c41a;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Dark mode support */
+.panel.dark {
+  background: linear-gradient(135deg, #141414 0%, #1f1f1f 100%);
+  color: white;
+  border-left-color: #404040;
+}
+
+.panel.dark .header {
+  background: linear-gradient(135deg, #141414 0%, #1f1f1f 100%);
+  border-bottom-color: rgba(64, 64, 64, 0.8);
+  backdrop-filter: blur(20px);
+}
+
+.panel.dark .title {
+  color: white;
+}
+
+.panel.dark .clearAllButton {
+  background: rgba(255, 77, 79, 0.12);
+  color: #ff7875;
+}
+
+.panel.dark .clearAllButton:hover {
+  background: rgba(255, 77, 79, 0.2);
+  color: #ff4d4f;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 77, 79, 0.3);
+}
+
+.panel.dark .closeButton {
+  color: #8c8c8c;
+}
+
+.panel.dark .closeButton:hover {
+  background: rgba(255, 77, 79, 0.1);
+  color: #ff4d4f;
+  transform: scale(1.05) rotate(90deg);
+  box-shadow: 0 4px 12px rgba(255, 77, 79, 0.2);
+}
+
+.panel.dark .notificationCard {
+  background: linear-gradient(135deg, #1f1f1f 0%, #262626 100%);
+  border-color: rgba(64, 64, 64, 0.6);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.panel.dark .notificationCard:hover {
+  background: linear-gradient(135deg, #262626 0%, #303030 100%);
+  border-color: rgba(24, 144, 255, 0.4);
+  box-shadow: 0 8px 24px rgba(24, 144, 255, 0.15);
+}
+
+.panel.dark .notificationCard.unread {
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.15) 0%, rgba(82, 196, 26, 0.08) 100%);
+  border-color: rgba(24, 144, 255, 0.4);
+  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.2);
+}
+
+.panel.dark .notificationCard.unread:hover {
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.2) 0%, rgba(82, 196, 26, 0.1) 100%);
+  border-color: rgba(24, 144, 255, 0.5);
+  box-shadow: 0 8px 24px rgba(24, 144, 255, 0.25);
+}
+
+.panel.dark .cardTitle {
+  color: white;
+}
+
+.panel.dark .cardDescription {
+  color: #bfbfbf;
+}
+
+.panel.dark .cardTime {
+  color: #8c8c8c;
+}
+
+.panel.dark .actionButton {
+  background: linear-gradient(135deg, #1890ff, #52c41a);
+  border: none;
+  color: white;
+}
+
+.panel.dark .actionButton:hover {
+  background: linear-gradient(135deg, #0e7ae4, #47b318);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(24, 144, 255, 0.4);
+}
+
+.panel.dark .emptyState {
+  background: radial-gradient(circle at center, rgba(24, 144, 255, 0.08) 0%, transparent 70%);
+  border-color: rgba(24, 144, 255, 0.3);
+}
+
+.panel.dark .emptyState .title {
+  color: #bfbfbf;
+}
+
+.panel.dark .emptyState .description {
+  color: #8c8c8c;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .panel {
+    width: 380px;
+  }
+  
+  .header {
+    padding: 24px 28px;
+  }
+  
+  .title {
+    font-size: 20px;
+  }
+  
+  .closeButton {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  .clearAllButton {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+  
+  .notificationCard {
+    margin: 6px 20px 10px 20px;
+    padding: 18px;
+  }
+  
+  .cardTitle {
+    font-size: 15px;
+  }
+  
+  .cardDescription {
+    font-size: 13px;
+  }
+  
+  .cardTime {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .panel {
+    width: 350px;
+  }
+  
+  .header {
+    padding: 20px 24px;
+  }
+  
+  .title {
+    font-size: 18px;
+  }
+  
+  .closeButton {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+  
+  .clearAllButton {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  
+  .notificationCard {
+    margin: 6px 16px 8px 16px;
+    padding: 16px;
+    border-radius: 12px;
+  }
+  
+  .cardTitle {
+    font-size: 14px;
+  }
+  
+  .cardDescription {
+    font-size: 12px;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+  
+  .cardTime {
+    font-size: 11px;
+  }
+  
+  .unreadBadge {
+    width: 10px;
+    height: 10px;
+  }
+  
+  .actionButton {
+    margin: 12px 16px;
+    padding: 14px 18px;
+    font-size: 14px;
+  }
+  
+  .emptyState {
+    height: 250px;
+    padding: 30px 16px;
+    margin: 16px 16px;
+  }
+  
+  .emptyState .icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+  
+  .emptyState .title {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  
+  .emptyState .description {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 640px) {
+  .panel {
+    width: 320px;
+  }
+  
+  .header {
+    padding: 18px 20px;
+  }
+  
+  .title {
+    font-size: 16px;
+  }
+  
+  .closeButton {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+  
+  .clearAllButton {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+  
+  .notificationCard {
+    margin: 4px 12px 6px 12px;
+    padding: 14px;
+  }
+  
+  .cardTitle {
+    font-size: 13px;
+  }
+  
+  .cardDescription {
+    font-size: 11px;
+  }
+  
+  .cardTime {
+    font-size: 10px;
+  }
+  
+  .actionButton {
+    margin: 10px 12px;
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+  
+  .emptyState {
+    height: 200px;
+    padding: 24px 12px;
+  }
+  
+  .emptyState .icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+  
+  .emptyState .title {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  
+  .emptyState .description {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .panel {
+    width: 300px;
+  }
+  
+  .header {
+    padding: 16px 18px;
+  }
+  
+  .title {
+    font-size: 15px;
+    gap: 6px;
+  }
+  
+  .closeButton {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+  
+  .clearAllButton {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
+  
+  .notificationCard {
+    margin: 4px 10px 6px 10px;
+    padding: 12px;
+    border-radius: 10px;
+  }
+  
+  .cardHeader {
+    margin-bottom: 6px;
+  }
+  
+  .cardTitle {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  
+  .cardDescription {
+    font-size: 10px;
+    margin: 6px 0 8px 0;
+  }
+  
+  .cardTime {
+    font-size: 9px;
+  }
+  
+  .unreadBadge {
+    width: 8px;
+    height: 8px;
+    margin-left: 8px;
+  }
+  
+  .actionButton {
+    margin: 8px 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    border-radius: 12px;
+  }
+  
+  .emptyState {
+    height: 180px;
+    padding: 20px 10px;
+  }
+  
+  .emptyState .icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+  
+  .emptyState .title {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  
+  .emptyState .description {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 360px) {
+  .panel {
+    width: 280px;
+  }
+  
+  .header {
+    padding: 14px 16px;
+  }
+  
+  .title {
+    font-size: 14px;
+  }
+  
+  .closeButton {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+  
+  .clearAllButton {
+    width: 20px;
+    height: 20px;
+    font-size: 9px;
+  }
+  
+  .notificationCard {
+    margin: 3px 8px 4px 8px;
+    padding: 10px;
+  }
+  
+  .cardTitle {
+    font-size: 11px;
+  }
+  
+  .cardDescription {
+    font-size: 9px;
+  }
+  
+  .cardTime {
+    font-size: 8px;
+  }
+  
+  .unreadBadge {
+    width: 6px;
+    height: 6px;
+    margin-left: 6px;
+  }
+  
+  .actionButton {
+    margin: 6px 8px;
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+  
+  .emptyState {
+    height: 160px;
+    padding: 16px 8px;
+  }
+  
+  .emptyState .icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  
+  .emptyState .title {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  
+  .emptyState .description {
+    font-size: 10px;
+  }
+}

@@ -1,0 +1,457 @@
+/* Modal Overlay */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  padding: 20px;
+}
+
+.modalOverlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow: hidden;
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modalOverlay.open .modal {
+  transform: scale(1) translateY(0);
+}
+
+/* Modal Header */
+.modalHeader {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #262626;
+  letter-spacing: -0.02em;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(0, 0, 0, 0.06);
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+}
+
+.closeButton:hover {
+  background: rgba(255, 77, 79, 0.1);
+  color: #ff4d4f;
+  transform: rotate(90deg);
+}
+
+/* Modal Body */
+.modalBody {
+  padding: 28px;
+  max-height: calc(90vh - 160px);
+  overflow-y: auto;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #262626;
+  margin-bottom: 4px;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e8e8e8;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  background: linear-gradient(135deg, #fff 0%, #fafafa 100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: #bfbfbf;
+  font-weight: 400;
+}
+
+.input:hover,
+.select:hover,
+.textarea:hover {
+  border-color: #d9d9d9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 4px rgba(24, 144, 255, 0.12);
+  background: #fff;
+}
+
+.textarea {
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.select {
+  cursor: pointer;
+}
+
+/* Image Upload */
+.imageUpload {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.imageUploadArea {
+  border: 2px dashed #e8e8e8;
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%);
+}
+
+.imageUploadArea:hover {
+  border-color: #1890ff;
+  background: linear-gradient(135deg, #e6f7ff 0%, #f0f8ff 100%);
+}
+
+.imageUploadArea.dragOver {
+  border-color: #1890ff;
+  background: rgba(24, 144, 255, 0.08);
+}
+
+.uploadIcon {
+  font-size: 32px;
+  color: #bfbfbf;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+
+.imageUploadArea:hover .uploadIcon {
+  color: #1890ff;
+  transform: translateY(-2px);
+}
+
+.uploadText {
+  font-size: 16px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.uploadSubtext {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.imagePreview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 2px solid #e8e8e8;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fff 0%, #fafafa 100%);
+}
+
+.previewImage {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.previewInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.previewName {
+  font-weight: 600;
+  font-size: 14px;
+  color: #262626;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.previewSize {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.removeImageButton {
+  padding: 8px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 77, 79, 0.1);
+  color: #ff4d4f;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.removeImageButton:hover {
+  background: rgba(255, 77, 79, 0.2);
+  transform: scale(1.1);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+/* Modal Footer */
+.modalFooter {
+  padding: 20px 28px 24px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  outline: none;
+}
+
+.cancelButton {
+  background: #f8f9fa;
+  color: #666;
+  border: 2px solid #e9ecef;
+}
+
+.cancelButton:hover {
+  background: rgba(255, 77, 79, 0.1);
+  color: #ff4d4f;
+  border-color: rgba(255, 77, 79, 0.3);
+  transform: translateY(-1px);
+}
+
+.saveButton {
+  background: linear-gradient(135deg, #1890ff, #52c41a);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+.saveButton:hover {
+  background: linear-gradient(135deg, #0e7ae4, #47b318);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+}
+
+/* Status Toggle Styles */
+.statusToggleContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.statusToggle {
+  width: 48px;
+  height: 24px;
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+}
+
+.statusToggle.active {
+  background: linear-gradient(135deg, #52c41a, #73d13d);
+  box-shadow: 0 2px 8px rgba(82, 196, 26, 0.3);
+}
+
+.statusToggle.inactive {
+  background: linear-gradient(135deg, #ff7875, #ff9c99);
+  box-shadow: 0 2px 8px rgba(255, 120, 117, 0.3);
+}
+
+.toggleSlider {
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 1px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.statusToggle.active .toggleSlider {
+  transform: translateX(24px);
+}
+
+.statusToggle.inactive .toggleSlider {
+  transform: translateX(1px);
+}
+
+.statusToggle:hover {
+  transform: scale(1.05);
+}
+
+.statusLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.statusToggle.active + .statusLabel {
+  color: #52c41a;
+}
+
+.statusToggle.inactive + .statusLabel {
+  color: #ff4d4f;
+}
+
+.helpText {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.errorMessage {
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.input.error,
+.select.error,
+.textarea.error {
+  border-color: #ff4d4f;
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modalOverlay {
+    padding: 16px;
+  }
+  
+  .modal {
+    max-height: 95vh;
+  }
+  
+  .modalHeader {
+    padding: 20px 24px 16px;
+  }
+  
+  .modalTitle {
+    font-size: 18px;
+  }
+  
+  .modalBody {
+    padding: 24px;
+  }
+  
+  .modalFooter {
+    padding: 16px 24px 20px;
+    flex-direction: column-reverse;
+  }
+  
+  .button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .imageUploadArea {
+    padding: 32px 16px;
+  }
+  
+  .uploadIcon {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+  
+  .uploadText {
+    font-size: 14px;
+  }
+  
+  .statusToggleContainer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .statusToggle {
+    align-self: flex-start;
+  }
+}

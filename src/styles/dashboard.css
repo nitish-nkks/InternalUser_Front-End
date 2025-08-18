@@ -1,0 +1,504 @@
+/* Admin Dashboard Styles */
+
+/* Main Container */
+.admin-dashboard-main-container {
+  padding: 0;
+  background: transparent;
+}
+
+/* Header Section */
+.admin-dashboard-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.admin-dashboard-header-content {
+  flex: 1;
+}
+
+.admin-dashboard-main-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.admin-dashboard-sub-title {
+  margin: 4px 0 0 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.admin-dashboard-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  font-weight: 500;
+  height: 40px;
+  padding: 0 20px;
+  font-size: 14px;
+}
+
+/* Stat Cards */
+.admin-dashboard-stat-card {
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%) !important;
+  border: 1px solid #e8e8e8 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08) !important;
+  transition: all 0.3s ease !important;
+  overflow: hidden !important;
+}
+
+.admin-dashboard-stat-card:hover {
+  transform: translateY(-6px) scale(1.02) !important;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.2) !important;
+}
+
+.admin-dashboard-stat-title {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.admin-dashboard-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #262626;
+  line-height: 1;
+}
+
+.admin-dashboard-stat-change {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #52c41a;
+}
+
+/* Card Titles */
+.admin-dashboard-card-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Chart Card */
+.admin-dashboard-chart-card {
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%) !important;
+  border: 1px solid #e8e8e8 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08) !important;
+}
+
+/* Orders Overview Card */
+.admin-dashboard-orders-overview-card {
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%) !important;
+  border: 1px solid #e8e8e8 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08) !important;
+}
+
+.admin-dashboard-order-overview-item {
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+}
+
+.admin-dashboard-order-overview-item:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+}
+
+.admin-dashboard-order-overview-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-dashboard-order-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-dashboard-status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.admin-dashboard-status-text {
+  font-weight: 500;
+  color: #262626;
+}
+
+.admin-dashboard-order-count {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* Low Stock and Recent Orders Cards */
+.admin-dashboard-low-stock-card,
+.admin-dashboard-recent-orders-card {
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%) !important;
+  border: 1px solid #e8e8e8 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08) !important;
+}
+
+/* Enhanced Table Styling */
+.admin-dashboard-low-stock-card .ant-table,
+.admin-dashboard-recent-orders-card .ant-table {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.admin-dashboard-low-stock-card .ant-table-thead > tr > th,
+.admin-dashboard-recent-orders-card .ant-table-thead > tr > th {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+  border-bottom: 2px solid #dee2e6 !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  color: #495057 !important;
+  padding: 16px !important;
+}
+
+.admin-dashboard-low-stock-card .ant-table-tbody > tr > td,
+.admin-dashboard-recent-orders-card .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #f0f0f0 !important;
+  padding: 16px !important;
+  transition: all 0.3s ease;
+}
+
+.admin-dashboard-low-stock-card .ant-table-tbody > tr:hover > td,
+.admin-dashboard-recent-orders-card .ant-table-tbody > tr:hover > td {
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.05) 0%, rgba(24, 144, 255, 0.02) 100%) !important;
+  transform: scale(1.01);
+}
+
+
+/* Dashboard Table Search - Complete Style Override */
+.admin-dashboard-main-container .dashboard-table-search.ant-input-search.ant-input-affix-wrapper {
+  border-radius: 6px !important;
+  border: 1px solid #d9d9d9 !important;
+  font-size: 14px !important;
+  padding: 4px 11px !important;
+  height: 32px !important;
+  width: 200px !important;
+  background: #fff !important;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.016) !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-dashboard-main-container .dashboard-table-search.ant-input-search.ant-input-affix-wrapper:hover {
+  border-color: #40a9ff !important;
+  border-right-width: 1px !important;
+  box-shadow: 0 0 0 2px rgba(64, 169, 255, 0.2) !important;
+  outline: 0 !important;
+  background: #fff !important;
+}
+
+.admin-dashboard-main-container .dashboard-table-search.ant-input-search.ant-input-affix-wrapper-focused,
+.admin-dashboard-main-container .dashboard-table-search.ant-input-search.ant-input-affix-wrapper:focus {
+  border-color: #40a9ff !important;
+  border-right-width: 1px !important;
+  box-shadow: 0 0 0 2px rgba(64, 169, 255, 0.2) !important;
+  outline: 0 !important;
+  background: #fff !important;
+}
+
+.admin-dashboard-main-container .dashboard-table-search.ant-input-search .ant-input {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 0 !important;
+  height: auto !important;
+  background: transparent !important;
+  font-size: 14px !important;
+  color: rgba(0, 0, 0, 0.88) !important;
+}
+
+.admin-dashboard-main-container .dashboard-table-search.ant-input-search .ant-input:focus {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.admin-dashboard-main-container .dashboard-table-search.ant-input-search .ant-input-suffix {
+  color: rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Force override for any nested elements */
+.admin-dashboard-main-container .dashboard-table-search * {
+  border-radius: inherit !important;
+}
+
+/* Enhanced Pagination */
+.ant-pagination {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.ant-pagination-item {
+  border-radius: 8px !important;
+  border: 2px solid #e8e8e8 !important;
+  transition: all 0.3s ease !important;
+}
+
+.ant-pagination-item:hover,
+.ant-pagination-item-active {
+  border-color: #1890ff !important;
+  transform: translateY(-1px);
+}
+
+.ant-pagination-item-active a {
+  color: #1890ff !important;
+  font-weight: 600 !important;
+}
+
+/* Enhanced Tags */
+.ant-tag {
+  border-radius: 16px !important;
+  font-weight: 500 !important;
+  padding: 6px 14px !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.ant-tag:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Enhanced buttons */
+.ant-btn {
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+}
+
+.ant-btn:hover {
+  transform: translateY(-1px) !important;
+}
+
+/* General card hover effects */
+.admin-dashboard-main-container .ant-card {
+  transition: all 0.3s ease !important;
+  border-radius: 16px !important;
+}
+
+.admin-dashboard-main-container .ant-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15) !important;
+}
+
+/* Content area styling */
+.ant-layout-content {
+  background: transparent !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .admin-dashboard-main-title {
+    font-size: 22px;
+  }
+  
+  .admin-dashboard-stat-value {
+    font-size: 20px;
+  }
+  
+  .admin-dashboard-card-title {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .admin-dashboard-header-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  
+  .admin-dashboard-main-title {
+    font-size: 20px;
+  }
+  
+  .admin-dashboard-sub-title {
+    font-size: 13px;
+  }
+  
+  .admin-dashboard-stat-value {
+    font-size: 18px;
+  }
+  
+  .admin-dashboard-stat-title {
+    font-size: 13px;
+  }
+  
+  .admin-dashboard-stat-change {
+    font-size: 11px;
+  }
+  
+  .admin-dashboard-order-count {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-dashboard-main-title {
+    font-size: 18px;
+  }
+  
+  .admin-dashboard-sub-title {
+    font-size: 12px;
+  }
+  
+  .admin-dashboard-stat-card {
+    border-radius: 12px !important;
+  }
+  
+  .admin-dashboard-stat-value {
+    font-size: 16px;
+  }
+  
+  .admin-dashboard-stat-title {
+    font-size: 12px;
+  }
+  
+  .admin-dashboard-card-title {
+    font-size: 14px;
+  }
+  
+  .admin-dashboard-chart-card,
+  .admin-dashboard-orders-overview-card,
+  .admin-dashboard-low-stock-card,
+  .admin-dashboard-recent-orders-card {
+    border-radius: 12px !important;
+  }
+  
+  .admin-dashboard-low-stock-card .ant-table-thead > tr > th,
+  .admin-dashboard-recent-orders-card .ant-table-thead > tr > th {
+    padding: 12px 8px !important;
+    font-size: 11px !important;
+  }
+  
+  .admin-dashboard-low-stock-card .ant-table-tbody > tr > td,
+  .admin-dashboard-recent-orders-card .ant-table-tbody > tr > td {
+    padding: 12px 8px !important;
+    font-size: 12px !important;
+  }
+  
+  .dashboard-table-search.ant-input-search.ant-input-affix-wrapper {
+    width: 100% !important;
+    max-width: 200px !important;
+  }
+  
+  .admin-dashboard-filter-btn {
+    height: 36px;
+    font-size: 13px;
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-dashboard-main-title {
+    font-size: 16px;
+  }
+  
+  .admin-dashboard-stat-value {
+    font-size: 14px;
+  }
+  
+  .admin-dashboard-stat-title {
+    font-size: 11px;
+  }
+  
+  .admin-dashboard-card-title {
+    font-size: 13px;
+  }
+  
+  .admin-dashboard-low-stock-card .ant-table-thead > tr > th,
+  .admin-dashboard-recent-orders-card .ant-table-thead > tr > th {
+    padding: 10px 6px !important;
+    font-size: 10px !important;
+  }
+  
+  .admin-dashboard-low-stock-card .ant-table-tbody > tr > td,
+  .admin-dashboard-recent-orders-card .ant-table-tbody > tr > td {
+    padding: 10px 6px !important;
+    font-size: 11px !important;
+  }
+  
+  .dashboard-table-search.ant-input-search.ant-input-affix-wrapper {
+    height: 28px !important;
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-dashboard-main-title {
+    font-size: 15px;
+  }
+  
+  .admin-dashboard-sub-title {
+    font-size: 11px;
+  }
+  
+  .admin-dashboard-stat-value {
+    font-size: 13px;
+  }
+  
+  .admin-dashboard-stat-title {
+    font-size: 10px;
+  }
+  
+  .admin-dashboard-card-title {
+    font-size: 12px;
+  }
+  
+  .admin-dashboard-order-count {
+    font-size: 12px;
+  }
+  
+  .admin-dashboard-status-text {
+    font-size: 11px;
+  }
+  
+  .admin-dashboard-low-stock-card .ant-table-thead > tr > th,
+  .admin-dashboard-recent-orders-card .ant-table-thead > tr > th {
+    padding: 8px 4px !important;
+    font-size: 9px !important;
+  }
+  
+  .admin-dashboard-low-stock-card .ant-table-tbody > tr > td,
+  .admin-dashboard-recent-orders-card .ant-table-tbody > tr > td {
+    padding: 8px 4px !important;
+    font-size: 10px !important;
+  }
+  
+  .dashboard-table-search.ant-input-search.ant-input-affix-wrapper {
+    height: 26px !important;
+    font-size: 11px !important;
+    width: 100% !important;
+  }
+  
+  .admin-dashboard-filter-btn {
+    height: 32px;
+    font-size: 11px;
+    padding: 0 12px;
+  }
+  
+  .admin-dashboard-stat-card:hover {
+    transform: translateY(-2px) scale(1.01) !important;
+  }
+  
+  .admin-dashboard-main-container .ant-card:hover {
+    transform: translateY(-2px) !important;
+  }
+}
