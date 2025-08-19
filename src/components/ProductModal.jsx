@@ -2,107 +2,136 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FiX, FiUpload, FiTrash2, FiSave } from 'react-icons/fi';
 import classNames from 'classnames';
 import styles from './ProductModal.module.css';
-import { categoryOptions, statusOptions } from '../constants/productData';
+import { addProduct, getCategoryTree } from '../api/api';
+
+const renderCategoryOptions = (categories, prefix = "") => {
+  return categories.map(cat => (
+    <React.Fragment key={cat.id}>
+      <option value={cat.id}>
+        {prefix}{cat.name}
+      </option>
+      {cat.subCategories && cat.subCategories.length > 0 &&
+        renderCategoryOptions(cat.subCategories, prefix + "-- ")}
+    </React.Fragment>
+  ));
+};
 
 const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' }) => {
   const [formData, setFormData] = useState({
     name: '',
-    sku: '',
-    category: 'poultry',
-    price: '',
-    discountPrice: '',
-    stock: '',
-    status: 'active',
     description: '',
-    images: []
+    price: '',
+    discountPercentage: '',
+    stockQuantity: '',
+    minOrderQuantity: '',
+    categoryId: null,
+    productImages: [],
+    isFeatured: false,
+    isNewProduct: false,
+    isBestSeller: false,
   });
+  const [categoryTree, setCategoryTree] = useState([]);
   const [errors, setErrors] = useState({});
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [imageFiles, setImageFiles] = useState([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef(null);
   const modalRef = useRef(null);
 
   useEffect(() => {
-    if (isOpen && product && (mode === 'edit' || mode === 'view')) {
-      setFormData({
-        name: product.name || '',
-        sku: product.sku || `SKU-${product.id?.toString().padStart(4, '0')}` || '',
-        category: product.category || 'poultry',
-        price: product.price || '',
-        discountPrice: product.discountPrice || '',
-        stock: product.stock || '',
-        status: product.status || 'active',
-        description: product.description || '',
-        images: []
-      });
-      setImagePreviews(product.image ? [product.image] : []);
-      setErrors({});
-    } else if (isOpen && mode === 'add') {
-      setFormData({
-        name: '',
-        sku: '',
-        category: 'poultry',
-        price: '',
-        discountPrice: '',
-        stock: '',
-        status: 'active',
-        description: '',
-        images: []
-      });
-      setImagePreviews([]);
+    if (isOpen) {
+      const fetchCategories = async () => {
+        try {
+          const res = await getCategoryTree();
+          setCategoryTree(res.data.data);
+        } catch (err) {
+          console.error("Error fetching categories:", err);
+        }
+      };
+      fetchCategories();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (product && (mode === 'edit' || mode === 'view')) {
+        const existingImages = product.images ? product.images.split(',') : [];
+        setFormData({
+          name: product.name || '',
+          description: product.description || '',
+          price: product.price || '',
+          discountPercentage: product.discountPercentage || '',
+          stockQuantity: product.stockQuantity || '',
+          minOrderQuantity: product.minOrderQuantity || '',
+          categoryId: product.categoryId || '',
+          productImages: existingImages,
+          isFeatured: product.isFeatured ?? false,
+          isNewProduct: product.isNewProduct ?? false,
+          isBestSeller: product.isBestSeller ?? false,
+        });
+        setImagePreviews(existingImages);
+      } else if (mode === 'add') {
+        setFormData({
+          name: '',
+          description: '',
+          price: '',
+          discountPercentage: '',
+          stockQuantity: '',
+          minOrderQuantity: '',
+          categoryId: null,
+          productImages: [],
+          isFeatured: false,
+          isNewProduct: false,
+          isBestSeller: false,
+        });
+        setImagePreviews([]);
+        setImageFiles([]);
+      }
       setErrors({});
     }
   }, [isOpen, product, mode]);
 
-  // Handle outside click
+  // Handle outside click and ESC key (no changes)
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isOpen && modalRef.current && !modalRef.current.contains(event.target)) {
         onClose();
       }
     };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, onClose]);
-
-  // Handle ESC key
-  useEffect(() => {
     const handleEscKey = (event) => {
       if (event.key === 'Escape' && isOpen) {
         onClose();
       }
     };
-
-    document.addEventListener('keydown', handleEscKey);
-    return () => document.removeEventListener('keydown', handleEscKey);
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscKey);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscKey);
+      document.body.style.overflow = 'unset';
+    };
   }, [isOpen, onClose]);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    
-    // Handle description word limit (500 words)
+    const { name, value, type, checked } = e.target;
+    const inputValue = type === 'checkbox' ? checked : value;
+
     if (name === 'description') {
-      const wordCount = getWordCount(value);
+      const wordCount = getWordCount(inputValue);
       if (wordCount > 500) {
         return;
       }
     }
-    
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: inputValue
     }));
-    // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -113,21 +142,16 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
   };
 
   const handleImageUpload = (files) => {
-    const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
-    
-    imageFiles.forEach(file => {
-      if (imagePreviews.length < 5) { // Limit to 5 images
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setImagePreviews(prev => [...prev, e.target.result]);
-          setFormData(prev => ({
-            ...prev,
-            images: [...prev.images, file]
-          }));
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+    const newImageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+    const combinedFiles = [...imageFiles, ...newImageFiles];
+    if (combinedFiles.length > 5) {
+      // handle error
+      return;
+    }
+    setImageFiles(combinedFiles);
+
+    const newImagePreviews = newImageFiles.map(file => URL.createObjectURL(file));
+    setImagePreviews(prev => [...prev, ...newImagePreviews]);
   };
 
   const handleFileInputChange = (e) => {
@@ -156,80 +180,70 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
 
   const removeImage = (index) => {
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
-    if (!formData.name.trim()) {
-      newErrors.name = 'Product name is required';
-    }
-    
-    if (!formData.sku.trim()) {
-      newErrors.sku = 'SKU/Code is required';
-    }
-    
-    if (!formData.price || formData.price <= 0) {
-      newErrors.price = 'Price must be greater than 0';
-    }
-    
-    if (formData.discountPrice && formData.discountPrice >= formData.price) {
-      newErrors.discountPrice = 'Discount price must be less than regular price';
-    }
-    
-    if (!formData.stock || formData.stock < 0) {
-      newErrors.stock = 'Stock must be 0 or greater';
-    }
-    
-    const wordCount = getWordCount(formData.description);
-    if (wordCount > 500) {
-      newErrors.description = 'Description cannot exceed 500 words';
-    }
-    
+    if (!formData.name.trim()) newErrors.name = 'Product name is required';
+    if (!formData.price || formData.price <= 0) newErrors.price = 'Price must be greater than 0';
+    if (formData.discountPercentage && formData.discountPercentage >= 100) newErrors.discountPercentage = 'Discount percentage must be less than 100';
+    if (!formData.stockQuantity || formData.stockQuantity < 0) newErrors.stockQuantity = 'Stock must be 0 or greater';
+    if (!formData.minOrderQuantity || formData.minOrderQuantity <= 0) newErrors.minOrderQuantity = 'Minimum order quantity must be greater than 0';
+    if (getWordCount(formData.description) > 500) newErrors.description = 'Description cannot exceed 500 words';
+    if (!formData.categoryId) newErrors.categoryId = 'Category is required';
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (mode === 'view') {
+
+    if (mode === "view") {
       onClose();
       return;
     }
-    
+
     if (!validateForm()) {
       return;
     }
 
     const productData = {
-      ...formData,
+      name: formData.name,
+      description: formData.description,
       price: parseFloat(formData.price),
-      discountPrice: formData.discountPrice ? parseFloat(formData.discountPrice) : null,
-      stock: parseInt(formData.stock),
-      image: imagePreviews[0] || null, // Use first image as main image
-      images: imagePreviews
+      discountPercentage: parseFloat(formData.discountPercentage) || 0,
+      stockQuantity: parseInt(formData.stockQuantity),
+      minOrderQuantity: parseInt(formData.minOrderQuantity),
+      categoryId: formData.categoryId ? parseInt(formData.categoryId) : null,
+      productImages: formData.productImages,
+      isFeatured: formData.isFeatured,
+      isNewProduct: formData.isNewProduct,
+      isBestSeller: formData.isBestSeller,
     };
 
-    if (mode === 'edit' && product) {
-      productData.id = product.id;
-    }
+    setIsLoading(true);
+    try {
+      let response;
+      if (mode === "add") {
+        response = await addProduct(productData);
+      }
 
-    onSave(productData);
-    onClose();
+      console.log("Product saved successfully:", response);
+      onSave(response.data);
+
+      window.alert("✅ Product added successfully!");
+
+      window.location.href = "/products";
+    } catch (error) {
+      console.error("Error saving product:", error);
+      setErrors({ api: error.message || "An error occurred. Please try again." });
+    } finally {
+      setIsLoading(false);
+    }
   };
+
 
   if (!isOpen) return null;
 
@@ -240,15 +254,10 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
           <h2 className={styles.modalTitle}>
             {mode === 'view' ? 'Product Details' : mode === 'edit' ? 'Update Feed Product' : 'Create New Feed Product'}
           </h2>
-          <button
-            className={styles.closeButton}
-            onClick={onClose}
-            aria-label="Close modal"
-          >
+          <button className={styles.closeButton} onClick={onClose} aria-label="Close modal">
             <FiX />
           </button>
         </div>
-
         <div className={styles.modalBody}>
           <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.formGroup}>
@@ -267,55 +276,20 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.label}>SKU/Code *</label>
-              <input
-                type="text"
-                name="sku"
-                value={formData.sku}
+              <label className={styles.label}>Description</label>
+              <textarea
+                name="description"
+                value={formData.description}
                 onChange={handleInputChange}
-                className={classNames(styles.input, { [styles.error]: errors.sku })}
-                placeholder="Enter SKU or product code"
+                className={classNames(styles.textarea, { [styles.error]: errors.description })}
+                placeholder="Enter product description..."
+                rows={4}
                 disabled={mode === 'view'}
-                required
               />
-              {errors.sku && <span className={styles.errorMessage}>{errors.sku}</span>}
-            </div>
-
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Category *</label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                  className={styles.select}
-                  disabled={mode === 'view'}
-                  required
-                >
-                  {categoryOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+              <div className={styles.characterCount}>
+                {getWordCount(formData.description)} / 500 words
               </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Status</label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  className={styles.select}
-                  disabled={mode === 'view'}
-                >
-                  {statusOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {errors.description && <span className={styles.errorMessage}>{errors.description}</span>}
             </div>
 
             <div className={styles.formRow}>
@@ -337,58 +311,113 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.label}>Discount Price (₹)</label>
+                <label className={styles.label}>Discount Percentage (%)</label>
                 <input
                   type="number"
-                  name="discountPrice"
-                  value={formData.discountPrice}
+                  name="discountPercentage"
+                  value={formData.discountPercentage}
                   onChange={handleInputChange}
-                  className={classNames(styles.input, { [styles.error]: errors.discountPrice })}
-                  placeholder="0.00"
+                  className={classNames(styles.input, { [styles.error]: errors.discountPercentage })}
+                  placeholder="0"
                   min="0"
-                  step="0.01"
+                  max="100"
                   disabled={mode === 'view'}
                 />
-                {errors.discountPrice && <span className={styles.errorMessage}>{errors.discountPrice}</span>}
+                {errors.discountPercentage && <span className={styles.errorMessage}>{errors.discountPercentage}</span>}
               </div>
             </div>
 
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Stock/Inventory *</label>
+                <input
+                  type="number"
+                  name="stockQuantity"
+                  value={formData.stockQuantity}
+                  onChange={handleInputChange}
+                  className={classNames(styles.input, { [styles.error]: errors.stockQuantity })}
+                  placeholder="0"
+                  min="0"
+                  disabled={mode === 'view'}
+                  required
+                />
+                {errors.stockQuantity && <span className={styles.errorMessage}>{errors.stockQuantity}</span>}
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Min Order Quantity *</label>
+                <input
+                  type="number"
+                  name="minOrderQuantity"
+                  value={formData.minOrderQuantity}
+                  onChange={handleInputChange}
+                  className={classNames(styles.input, { [styles.error]: errors.minOrderQuantity })}
+                  placeholder="1"
+                  min="1"
+                  disabled={mode === 'view'}
+                  required
+                />
+                {errors.minOrderQuantity && <span className={styles.errorMessage}>{errors.minOrderQuantity}</span>}
+              </div>
+            </div>
             <div className={styles.formGroup}>
-              <label className={styles.label}>Stock/Inventory *</label>
-              <input
-                type="number"
-                name="stock"
-                value={formData.stock}
+              <label className={styles.label}>Category *</label>
+              <select
+                name="categoryId"
+                value={formData.categoryId ?? ""}
                 onChange={handleInputChange}
-                className={classNames(styles.input, { [styles.error]: errors.stock })}
-                placeholder="0"
-                min="0"
-                disabled={mode === 'view'}
+                className={classNames(styles.select, { [styles.error]: errors.categoryId })}
+                disabled={mode === "view"}
                 required
-              />
-              {errors.stock && <span className={styles.errorMessage}>{errors.stock}</span>}
+              >
+                <option value="" disabled>Select a category</option>
+                {renderCategoryOptions(categoryTree)}
+              </select>
+              {errors.categoryId && <span className={styles.errorMessage}>{errors.categoryId}</span>}
             </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Description</label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                className={classNames(styles.textarea, { [styles.error]: errors.description })}
-                placeholder="Enter product description..."
-                rows={4}
-                disabled={mode === 'view'}
-              />
-              <div className={styles.characterCount}>
-                {getWordCount(formData.description)} / 500 words
+            {/* Added new boolean fields */}
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    name="isFeatured"
+                    checked={formData.isFeatured}
+                    onChange={handleInputChange}
+                    disabled={mode === 'view'}
+                  />
+                  Is Featured
+                </label>
               </div>
-              {errors.description && <span className={styles.errorMessage}>{errors.description}</span>}
+              <div className={styles.formGroup}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    name="isNewProduct"
+                    checked={formData.isNewProduct}
+                    onChange={handleInputChange}
+                    disabled={mode === 'view'}
+                  />
+                  Is New Product
+                </label>
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    name="isBestSeller"
+                    checked={formData.isBestSeller}
+                    onChange={handleInputChange}
+                    disabled={mode === 'view'}
+                  />
+                  Is Best Seller
+                </label>
+              </div>
             </div>
 
             <div className={styles.imageUpload}>
               <label className={styles.label}>Product Images (Multiple)</label>
-              
+
               {mode !== 'view' && (
                 <div
                   className={classNames(styles.imageUploadArea, {
@@ -444,6 +473,8 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
                 />
               )}
             </div>
+            {isLoading && <div className={styles.loading}>Saving product...</div>}
+            {errors.api && <div className={styles.errorMessage}>{errors.api}</div>}
           </form>
         </div>
 
@@ -452,6 +483,7 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
             type="button"
             className={classNames(styles.button, styles.cancelButton)}
             onClick={onClose}
+            disabled={isLoading}
           >
             {mode === 'view' ? 'Close' : 'Cancel'}
           </button>
@@ -460,6 +492,7 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
               type="submit"
               className={classNames(styles.button, styles.saveButton)}
               onClick={handleSubmit}
+              disabled={isLoading}
             >
               <FiSave />
               {mode === 'edit' ? 'Update Product' : 'Save Product'}

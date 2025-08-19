@@ -1,5 +1,7 @@
 import axiosInstance from "./axiosInstance";
 
+const BASE_URL = "http://localhost:5207/api";
+
 export const loginUser = (email, password, guestId = null) => {
     return axiosInstance.post("/auth/login", {
         email,
@@ -18,4 +20,17 @@ export const getInternalUserDetails = (userId) => {
             Authorization: `Bearer ${token}`
         }
     });
+};
+
+export const addProduct = async (productData) => {
+    try {
+        const response = await axiosInstance.post(`/Products`, productData);
+        return response.data;
+    } catch (error) {
+        throw error.response.data || error.message;
+    }
+};
+
+export const getCategoryTree = async () => {
+  return axiosInstance.get("/Categories/tree");
 };
