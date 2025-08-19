@@ -34,3 +34,21 @@ export const addProduct = async (productData) => {
 export const getCategoryTree = async () => {
   return axiosInstance.get("/Categories/tree");
 };
+
+export const uploadProductImage = async (productId, file, isPrimary = false) => {
+  const formData = new FormData();
+  formData.append("ProductId", productId);
+  formData.append("Image", file);
+  formData.append("IsPrimary", isPrimary);
+
+  try {
+    const response = await axiosInstance.post("/ProductImages/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
