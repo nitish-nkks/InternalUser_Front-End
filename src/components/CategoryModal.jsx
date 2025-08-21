@@ -2,39 +2,71 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FiX, FiSave } from 'react-icons/fi';
 import classNames from 'classnames';
 import styles from './CategoryModal.module.css';
-import { buildCategoryOptions } from '../constants/categoryData';
+import { getCategoryTree, addCategory } from '../api/api';
+import axios from 'axios';
 
 const CategoryModal = ({ isOpen, onClose, onSave, category = null, categories = [], mode = 'add' }) => {
   const [formData, setFormData] = useState({
     name: '',
-    parentId: '',
+    parentCategoryId: '',
     description: '',
-    status: true
+    image: '',
+    imageFile: null,
+    icon: '',
+    iconFile: null,
   });
+
   const [errors, setErrors] = useState({});
+  const [categoryTree, setCategoryTree] = useState([]);
   const modalRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      getCategoryTree()
+        .then(res => {
+          if (res.data.succeeded) {
+            setCategoryTree(res.data.data);
+          }
+        })
+        .catch(err => console.error("Failed to fetch category tree:", err));
+    }
+  }, [isOpen]);
+
+  const flattenTree = (nodes, depth = 0) => {
+    return nodes.flatMap(node => [
+      { id: node.id, name: `${"— ".repeat(depth)}${node.name}` },
+      ...flattenTree(node.subCategories || [], depth + 1)
+    ]);
+  };
+
+  const categoryOptions = flattenTree(categoryTree);
 
   useEffect(() => {
     if (isOpen && category && mode === 'edit') {
       setFormData({
         name: category.name || '',
-        parentId: category.parentId || '',
+        parentCategoryId: category.parentCategoryId ?? null,
         description: category.description || '',
+        image: category.image || '',
+        icon: category.icon || '',
         status: category.status === 'active'
       });
       setErrors({});
     } else if (isOpen && mode === 'add') {
       setFormData({
         name: '',
-        parentId: '',
+        parentCategoryId: null,
         description: '',
+        image: '',
+        imageFile: null,
+        icon: '',
+        iconFile: null,
         status: true
       });
       setErrors({});
     }
   }, [isOpen, category, mode]);
 
-  // Handle outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isOpen && modalRef.current && !modalRef.current.contains(event.target)) {
@@ -55,7 +87,6 @@ const CategoryModal = ({ isOpen, onClose, onSave, category = null, categories = 
     };
   }, [isOpen, onClose]);
 
-  // Handle ESC key
   useEffect(() => {
     const handleEscKey = (event) => {
       if (event.key === 'Escape' && isOpen) {
@@ -69,114 +100,96 @@ const CategoryModal = ({ isOpen, onClose, onSave, category = null, categories = 
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
-    // Handle description word limit (500 words)
-    if (name === 'description') {
-      const wordCount = getWordCount(value);
-      if (wordCount > 500) {
-        return;
-      }
-    }
-    
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-    // Clear error for this field when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
   };
+
 
   const getWordCount = (text) => {
     return text.trim() ? text.trim().split(/\s+/).length : 0;
   };
 
-  const handleStatusToggle = () => {
+  const handleFileChange = (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
     setFormData(prev => ({
       ...prev,
-      status: !prev.status
+      [`${type}File`]: file,
+      [type]: URL.createObjectURL(file)
     }));
   };
 
+
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) {
       newErrors.name = 'Category name is required';
     }
-    
-    // Check for circular dependency
-    if (formData.parentId && mode === 'edit') {
-      const isCircular = checkCircularDependency(formData.parentId, category.id);
+
+    if (formData.parentCategoryId && mode === 'edit') {
+      const isCircular = checkCircularDependency(formData.parentCategoryId, category.id);
       if (isCircular) {
-        newErrors.parentId = 'Cannot select this category as it would create a circular dependency';
+        newErrors.parentCategoryId = 'Cannot select this category as it would create a circular dependency';
       }
     }
-    
+
     const wordCount = getWordCount(formData.description);
     if (wordCount > 500) {
       newErrors.description = 'Description cannot exceed 500 words';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const checkCircularDependency = (parentId, categoryId) => {
-    if (!parentId) return false;
-    if (parentId === categoryId) return true;
-    
-    const parent = categories.find(c => c.id === parseInt(parentId));
+  const checkCircularDependency = (parentCategoryId, categoryId) => {
+    if (!parentCategoryId) return false;
+    if (parentCategoryId === categoryId) return true;
+
+    const parent = categories.find(c => c.id === parseInt(parentCategoryId));
     if (!parent) return false;
-    
-    return checkCircularDependency(parent.parentId, categoryId);
+
+    return checkCircularDependency(parent.parentCategoryId, categoryId);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
+    if (!validateForm()) return;
+
+    const formDataObj = new FormData();
+    formDataObj.append("Name", formData.name);
+    formDataObj.append("Description", formData.description || "");
+
+    if (formData.parentCategoryId) {
+      formDataObj.append("ParentCategoryId", formData.parentCategoryId);
+    }
+    if (formData.imageFile) {
+      formDataObj.append("Image", formData.imageFile);
+    }
+    if (formData.iconFile) {
+      formDataObj.append("Icon", formData.iconFile);
     }
 
-    const categoryData = {
-      ...formData,
-      parentId: formData.parentId ? parseInt(formData.parentId) : null,
-      status: formData.status ? 'active' : 'inactive'
-    };
-
-    if (mode === 'edit' && category) {
-      categoryData.id = category.id;
+    try {
+      await addCategory(formDataObj);
+      alert("Category added successfully!");
+      onClose();
+    } catch (error) {
+      console.error("Error saving category:", error);
+      alert("Failed to save category.");
     }
-
-    onSave(categoryData);
-    onClose();
   };
 
   if (!isOpen) return null;
 
-  // Get available parent options (excluding self and children to prevent circular dependencies)
-  const getAvailableParents = () => {
-    const options = buildCategoryOptions();
-    
-    if (mode === 'edit' && category) {
-      // Filter out the current category and its children
-      const filterCategory = (categoryId) => {
-        const children = categories.filter(c => c.parentId === categoryId);
-        return [categoryId, ...children.flatMap(child => filterCategory(child.id))];
-      };
-      
-      const excludeIds = filterCategory(category.id);
-      return options.filter(option => !excludeIds.includes(option.value));
-    }
-    
-    return options;
-  };
-
   return (
     <div className={classNames(styles.modalOverlay, { [styles.open]: isOpen })}>
       <div className={styles.modal} ref={modalRef}>
+        {/* Header */}
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>
             {mode === 'edit' ? 'Update Category' : 'Add New Category'}
@@ -191,7 +204,9 @@ const CategoryModal = ({ isOpen, onClose, onSave, category = null, categories = 
         </div>
 
         <div className={styles.modalBody}>
-          <form className={styles.form} onSubmit={handleSubmit}>
+          <form id="categoryForm" className={styles.form} onSubmit={handleSubmit}>
+
+            {/* Category Name */}
             <div className={styles.formGroup}>
               <label className={styles.label}>Category Name *</label>
               <input
@@ -206,26 +221,31 @@ const CategoryModal = ({ isOpen, onClose, onSave, category = null, categories = 
               {errors.name && <span className={styles.errorMessage}>{errors.name}</span>}
             </div>
 
+            {/* Parent Category */}
             <div className={styles.formGroup}>
               <label className={styles.label}>Parent Category</label>
               <select
-                name="parentId"
-                value={formData.parentId}
-                onChange={handleInputChange}
-                className={classNames(styles.select, { [styles.error]: errors.parentId })}
+                id="parentCategoryId"
+                value={formData.parentCategoryId ?? ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    parentCategoryId: e.target.value ? parseInt(e.target.value) : null,
+                  })
+                }
+                className={classNames(styles.select, { [styles.error]: errors.parentCategoryId })}
               >
-                {getAvailableParents().map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
+                <option value="">None</option>
+                {categoryOptions.map(opt => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.name}
                   </option>
                 ))}
               </select>
-              {errors.parentId && <span className={styles.errorMessage}>{errors.parentId}</span>}
-              <div className={styles.helpText}>
-                Select a parent category to create a hierarchical structure
-              </div>
+              {errors.parentCategoryId && <span className={styles.errorMessage}>{errors.parentCategoryId}</span>}
             </div>
 
+            {/* Description */}
             <div className={styles.formGroup}>
               <label className={styles.label}>Description</label>
               <textarea
@@ -242,25 +262,30 @@ const CategoryModal = ({ isOpen, onClose, onSave, category = null, categories = 
               {errors.description && <span className={styles.errorMessage}>{errors.description}</span>}
             </div>
 
+            {/* Category Image */}
             <div className={styles.formGroup}>
-              <label className={styles.label}>Status</label>
-              <div className={styles.statusToggleContainer}>
-                <div 
-                  className={classNames(styles.statusToggle, { 
-                    [styles.active]: formData.status,
-                    [styles.inactive]: !formData.status
-                  })}
-                  onClick={handleStatusToggle}
-                >
-                  <div className={styles.toggleSlider}></div>
-                </div>
-                <span className={styles.statusLabel}>
-                  {formData.status ? 'Active' : 'Inactive'}
-                </span>
-              </div>
-              <div className={styles.helpText}>
-                {formData.status ? 'Category is visible and available for use' : 'Category is hidden and not available for use'}
-              </div>
+              <label className={styles.label}>Category Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, "image")}
+              />
+              {formData.image && (
+                <img src={formData.image} alt="Category" style={{ maxWidth: '100px' }} />
+              )}
+            </div>
+
+            {/* Category Icon */}
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Category Icon</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, "icon")}
+              />
+              {formData.icon && (
+                <img src={formData.icon} alt="Icon" style={{ maxWidth: '50px' }} />
+              )}
             </div>
           </form>
         </div>
@@ -275,8 +300,8 @@ const CategoryModal = ({ isOpen, onClose, onSave, category = null, categories = 
           </button>
           <button
             type="submit"
+            form="categoryForm"
             className={classNames(styles.button, styles.saveButton)}
-            onClick={handleSubmit}
           >
             <FiSave />
             {mode === 'edit' ? 'Update Category' : 'Save Category'}

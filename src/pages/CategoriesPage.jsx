@@ -23,8 +23,10 @@ const CategoriesPage = () => {
   const filteredCategories = useMemo(() => {
     let filtered = categories.filter(category => {
       const parentName = getParentCategoryName(category.parentId);
-      return category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        category.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      const categoryName = category.name || '';
+      const categoryDescription = category.description || '';
+      return categoryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        categoryDescription.toLowerCase().includes(searchTerm.toLowerCase()) ||
         parentName.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
