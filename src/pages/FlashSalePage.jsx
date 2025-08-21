@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiClock, FiChevronUp, FiChevronDown, FiZap } from 'react-icons/fi';
 import classNames from 'classnames';
 import styles from './FlashSalePage.module.css';
@@ -28,6 +29,7 @@ const FlashSalePage = () => {
   const [selectedSale, setSelectedSale] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const navigate = useNavigate();
 
   const { toasts, showSuccess, showError, removeToast } = useToast();
 
@@ -125,21 +127,17 @@ const FlashSalePage = () => {
     if (modalMode === 'add') {
       const newSale = {
         ...saleData,
-        id: Math.max(...flashSales.map(s => s.id)) + 1,
+        id: Math.max(0, ...flashSales.map(s => s.id)) + 1,
         createdDate: new Date().toISOString(),
+        status: 'scheduled',
         totalSales: 0,
         revenue: 0
       };
       setFlashSales(prev => [newSale, ...prev]);
       showSuccess(`Flash sale "${newSale.saleName}" created successfully!`);
-    } else if (modalMode === 'edit') {
+    } else { // edit mode
       setFlashSales(prev => prev.map(s => 
-        s.id === saleData.id ? { 
-          ...saleData, 
-          createdDate: s.createdDate,
-          totalSales: s.totalSales,
-          revenue: s.revenue
-        } : s
+        s.id === saleData.id ? { ...s, ...saleData } : s
       ));
       showSuccess(`Flash sale "${saleData.saleName}" updated successfully!`);
     }
@@ -270,7 +268,7 @@ const FlashSalePage = () => {
                   <FiChevronUp className={styles.sortIcon} style={{ opacity: 0.3 }} />
                 )}
               </th>
-              <th>Products Included</th>
+              <th>Product Included</th>
               <th className={styles.sortableColumn} onClick={() => handleSortChange('discountPercentage')}>
                 Discount %
                 {sortField === 'discountPercentage' ? (
@@ -323,21 +321,13 @@ const FlashSalePage = () => {
                   </td>
                   <td className={styles.flashSaleTableCell}>
                     <div className={styles.productsIncluded}>
-                      <div className={styles.productCount}>
-                        {products.length} product{products.length !== 1 ? 's' : ''}
-                      </div>
-                      <div className={styles.productList}>
-                        {products.slice(0, 2).map(product => (
-                          <div key={product.id} className={styles.productItem}>
-                            {product.name}
-                          </div>
-                        ))}
-                        {products.length > 2 && (
-                          <div className={styles.moreProducts}>
-                            +{products.length - 2} more
-                          </div>
-                        )}
-                      </div>
+                      {products.length > 0 ? (
+                        <div className={styles.productItem}>
+                          {products[0].name}
+                        </div>
+                      ) : (
+                        <div className={styles.productItem}>-</div>
+                      )}
                     </div>
                   </td>
                   <td className={styles.flashSaleTableCell}>

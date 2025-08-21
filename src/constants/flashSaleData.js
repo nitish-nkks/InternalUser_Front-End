@@ -155,6 +155,7 @@ export const getStatusColor = (status) => {
 };
 
 export const getProductsByIds = (productIds) => {
+  if (!productIds) return [];
   return availableProducts.filter(product => productIds.includes(product.id));
 };
 
@@ -174,21 +175,7 @@ export const getSaleStatus = (startDate, endDate, currentStatus) => {
   return 'active';
 };
 
-export const validateSaleDates = (startDate, endDate) => {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  const now = new Date();
 
-  if (start >= end) {
-    return { valid: false, error: 'End date must be after start date' };
-  }
-
-  if (end <= now) {
-    return { valid: false, error: 'End date must be in the future' };
-  }
-
-  return { valid: true, error: null };
-};
 
 export const formatDateForInput = (dateString) => {
   const date = new Date(dateString);

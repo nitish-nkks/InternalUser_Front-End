@@ -66,3 +66,23 @@ export const addCategory = async (data) => {
     throw error.response?.data || error.message;
   }
 };
+
+export const createFlashSale = async (flashSaleData) => {
+  try {
+    const response = await axiosInstance.post("/FlashSale", flashSaleData);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating flash sale:", error);
+    throw error.response?.data || error;
+  }
+};
+
+export const getAllProducts = async () => {
+  try {
+    const response = await axiosInstance.get("/Products/all");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    throw error.response?.data || error;
+  }
+};

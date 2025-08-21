@@ -2,52 +2,65 @@ import React, { useState, useEffect } from 'react';
 import { FiX, FiZap, FiPercent, FiCalendar, FiClock, FiPackage } from 'react-icons/fi';
 import classNames from 'classnames';
 import styles from './FlashSaleModal.module.css';
-import { 
-  statusOptions, 
-  availableProducts, 
-  validateSaleDates, 
-  formatDateForInput,
-  getProductsByIds 
-} from '../constants/flashSaleData';
+import { getAllProducts } from '../api/api';
+import { formatDateForInput } from '../constants/flashSaleData';
 
 const FlashSaleModal = ({ isOpen, onClose, onSave, sale, mode }) => {
   const [formData, setFormData] = useState({
     saleName: '',
-    products: [],
+    productId: null,
     discountPercentage: 10,
     startDate: '',
-    endDate: '',
-    status: 'active'
+    endDate: ''
   });
 
+  const [saleDay, setSaleDay] = useState(null);
   const [errors, setErrors] = useState({});
-  const [selectedProducts, setSelectedProducts] = useState([]);
-  const [isProductDropdownOpen, setIsProductDropdownOpen] = useState(false);
+  const [availableProducts, setAvailableProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
 
   useEffect(() => {
-    if (sale && mode === 'edit') {
-      setFormData({
-        ...sale,
-        startDate: formatDateForInput(sale.startDate),
-        endDate: formatDateForInput(sale.endDate)
-      });
-      setSelectedProducts(getProductsByIds(sale.products));
-    } else {
-      const now = new Date();
-      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-      const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-      
-      setFormData({
-        saleName: '',
-        products: [],
-        discountPercentage: 10,
-        startDate: formatDateForInput(tomorrow.toISOString()),
-        endDate: formatDateForInput(nextWeek.toISOString()),
-        status: 'active'
-      }); 
-      setSelectedProducts([]);
+    if (isOpen) {
+      setLoadingProducts(true);
+      getAllProducts()
+        .then(res => {
+          if (res.succeeded && res.data) {
+            const products = res.data.map(p => ({ id: p.id, name: p.name, price: p.price, category: p.category }));
+            setAvailableProducts(products);
+          }
+        })
+        .catch(err => {
+          console.error("Failed to fetch products:", err);
+        })
+        .finally(() => setLoadingProducts(false));
     }
-    setErrors({});
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+        if (sale && mode === 'edit') {
+            setFormData({
+                saleName: sale.saleName,
+                productId: sale.products[0],
+                discountPercentage: sale.discountPercentage,
+                startDate: formatDateForInput(sale.startDate),
+                endDate: formatDateForInput(sale.endDate)
+            });
+        } else {
+            const now = new Date();
+            const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+            const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+            setFormData({
+                saleName: '',
+                productId: null,
+                discountPercentage: 10,
+                startDate: formatDateForInput(tomorrow.toISOString()),
+                endDate: formatDateForInput(nextWeek.toISOString())
+            });
+        }
+        setErrors({});
+    }
   }, [sale, mode, isOpen]);
 
   const handleInputChange = (field, value) => {
@@ -55,7 +68,7 @@ const FlashSaleModal = ({ isOpen, onClose, onSave, sale, mode }) => {
       ...prev,
       [field]: value
     }));
-    
+
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
@@ -64,29 +77,20 @@ const FlashSaleModal = ({ isOpen, onClose, onSave, sale, mode }) => {
     }
   };
 
-  const handleProductToggle = (product) => {
-    const isSelected = selectedProducts.find(p => p.id === product.id);
-    
-    if (isSelected) {
-      const newSelected = selectedProducts.filter(p => p.id !== product.id);
-      setSelectedProducts(newSelected);
-      handleInputChange('products', newSelected.map(p => p.id));
-    } else {
-      const newSelected = [...selectedProducts, product];
-      setSelectedProducts(newSelected);
-      handleInputChange('products', newSelected.map(p => p.id));
+  const validateSaleDates = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const now = new Date();
+
+    if (start >= end) {
+      return { valid: false, error: 'End date must be after start date' };
     }
-  };
 
-  const handleRemoveProduct = (productId) => {
-    const newSelected = selectedProducts.filter(p => p.id !== productId);
-    setSelectedProducts(newSelected);
-    handleInputChange('products', newSelected.map(p => p.id));
-  };
+    if (end <= now) {
+      return { valid: false, error: 'End date must be in the future' };
+    }
 
-  const handleStatusToggle = () => {
-    const newStatus = formData.status === 'active' ? 'inactive' : 'active';
-    handleInputChange('status', newStatus);
+    return { valid: true, error: null };
   };
 
   const validateForm = () => {
@@ -96,8 +100,8 @@ const FlashSaleModal = ({ isOpen, onClose, onSave, sale, mode }) => {
       newErrors.saleName = 'Sale name is required';
     }
 
-    if (formData.products.length === 0) {
-      newErrors.products = 'At least one product must be selected';
+    if (!formData.productId) {
+      newErrors.productId = 'A product must be selected';
     }
 
     if (!formData.discountPercentage || formData.discountPercentage < 1 || formData.discountPercentage > 90) {
@@ -126,13 +130,13 @@ const FlashSaleModal = ({ isOpen, onClose, onSave, sale, mode }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      const saleData = {
-        ...formData,
-        startDate: new Date(formData.startDate).toISOString(),
-        endDate: new Date(formData.endDate).toISOString()
-      };
-      onSave(saleData);
-      onClose();
+        const saleData = {
+            ...formData,
+            products: [formData.productId],
+            id: sale ? sale.id : null,
+        };
+        onSave(saleData);
+        onClose();
     }
   };
 
@@ -150,6 +154,8 @@ const FlashSaleModal = ({ isOpen, onClose, onSave, sale, mode }) => {
   };
 
   if (!isOpen) return null;
+  
+  const selectedProduct = availableProducts.find(p => p.id === formData.productId);
 
   return (
     <div className={styles.modalOverlay} onClick={handleOverlayClick}>
@@ -203,7 +209,7 @@ const FlashSaleModal = ({ isOpen, onClose, onSave, sale, mode }) => {
                     value={formData.discountPercentage}
                     onChange={(e) => handleInputChange('discountPercentage', Number(e.target.value))}
                   />
-                  <div 
+                  <div
                     className={styles.discountPreview}
                     style={{ backgroundColor: getDiscountColor(formData.discountPercentage) }}
                   >
@@ -215,96 +221,32 @@ const FlashSaleModal = ({ isOpen, onClose, onSave, sale, mode }) => {
                 )}
               </div>
 
-              {/* Product Multi-Select */}
+              {/* Product Dropdown */}
               <div className={classNames(styles.formGroup, styles.productSelectGroup)}>
                 <label className={styles.formLabel}>
                   <FiPackage className={styles.labelIcon} />
-                  Products Included *
+                  Product Included *
                 </label>
-                
-                {/* Selected Products */}
-                {selectedProducts.length > 0 && (
-                  <div className={styles.selectedProducts}>
-                    {selectedProducts.map(product => (
-                      <div key={product.id} className={styles.selectedProduct}>
-                        <span className={styles.productName}>{product.name}</span>
-                        <span className={styles.productCategory}>({product.category})</span>
-                        <button
-                          type="button"
-                          className={styles.removeProduct}
-                          onClick={() => handleRemoveProduct(product.id)}
-                        >
-                          <FiX />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Product Dropdown */}
-                <div className={styles.productDropdownContainer}>
-                  <button
-                    type="button"
-                    className={classNames(styles.productDropdownButton, {
-                      [styles.error]: errors.products,
-                      [styles.open]: isProductDropdownOpen
-                    })}
-                    onClick={() => setIsProductDropdownOpen(!isProductDropdownOpen)}
-                  >
-                    <FiPackage />
-                    {selectedProducts.length > 0 
-                      ? `${selectedProducts.length} product${selectedProducts.length !== 1 ? 's' : ''} selected`
-                      : 'Select products'
-                    }
-                  </button>
-
-                  {isProductDropdownOpen && (
-                    <div className={styles.productDropdown}>
-                      <div className={styles.productDropdownHeader}>
-                        <span>Available Products</span>
-                        <button
-                          type="button"
-                          onClick={() => setIsProductDropdownOpen(false)}
-                          className={styles.dropdownClose}
-                        >
-                          <FiX />
-                        </button>
-                      </div>
-                      <div className={styles.productList}>
-                        {availableProducts.map(product => {
-                          const isSelected = selectedProducts.find(p => p.id === product.id);
-                          return (
-                            <div
-                              key={product.id}
-                              className={classNames(styles.productOption, {
-                                [styles.selected]: isSelected
-                              })}
-                              onClick={() => handleProductToggle(product)}
-                            >
-                              <div className={styles.productCheckbox}>
-                                <input
-                                  type="checkbox"
-                                  checked={!!isSelected}
-                                  onChange={() => {}} // Handled by onClick
-                                />
-                              </div>
-                              <div className={styles.productInfo}>
-                                <div className={styles.productOptionName}>{product.name}</div>
-                                <div className={styles.productDetails}>
-                                  <span className={styles.productOptionCategory}>{product.category}</span>
-                                  <span className={styles.productPrice}>₹{product.price}</span>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+                <select
+                  className={classNames(styles.formInput, {
+                    [styles.error]: errors.productId,
+                  })}
+                  value={formData.productId || ''}
+                  onChange={(e) => handleInputChange('productId', e.target.value ? Number(e.target.value) : null)}
+                >
+                  <option value="">Select a product</option>
+                  {loadingProducts ? (
+                    <option disabled>Loading products...</option>
+                  ) : (
+                    availableProducts.map(product => (
+                      <option key={product.id} value={product.id}>
+                        {`${product.name} (${product.category?.name || 'Uncategorized'}) - ₹${product.price}`}
+                      </option>
+                    ))
                   )}
-                </div>
-
-                {errors.products && (
-                  <span className={styles.errorText}>{errors.products}</span>
+                </select>
+                {errors.productId && (
+                  <span className={styles.errorText}>{errors.productId}</span>
                 )}
               </div>
 
@@ -346,38 +288,37 @@ const FlashSaleModal = ({ isOpen, onClose, onSave, sale, mode }) => {
                 )}
               </div>
 
-              {/* Status Toggle */}
+              {/* Sale Day */}
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>
-                  Status
+                  <FiCalendar className={styles.labelIcon} />
+                  Sale Day (Optional)
                 </label>
-                <div className={styles.statusToggle}>
-                  <button
-                    type="button"
-                    className={classNames(styles.toggleButton, {
-                      [styles.active]: formData.status === 'active'
-                    })}
-                    onClick={handleStatusToggle}
-                  >
-                    <div className={styles.toggleSlider}>
-                      <div className={styles.toggleHandle}></div>
-                    </div>
-                    <span className={styles.toggleLabel}>
-                      {formData.status === 'active' ? 'Active' : 'Inactive'}
-                    </span>
-                  </button>
-                </div>
+                <select
+                  className={classNames(styles.formInput, styles.dateTimeInput)}
+                  value={saleDay || ''}
+                  onChange={(e) => setSaleDay(e.target.value || null)}
+                >
+                  <option value="">Every Day</option>
+                  <option value="Sunday">Sunday</option>
+                  <option value="Monday">Monday</option>
+                  <option value="Tuesday">Tuesday</option>
+                  <option value="Wednesday">Wednesday</option>
+                  <option value="Thursday">Thursday</option>
+                  <option value="Friday">Friday</option>
+                  <option value="Saturday">Saturday</option>
+                </select>
               </div>
             </div>
 
             {/* Sale Summary */}
-            {selectedProducts.length > 0 && (
+            {selectedProduct && (
               <div className={styles.saleSummary}>
                 <h3 className={styles.summaryTitle}>Sale Summary</h3>
                 <div className={styles.summaryGrid}>
                   <div className={styles.summaryItem}>
-                    <span className={styles.summaryLabel}>Products:</span>
-                    <span className={styles.summaryValue}>{selectedProducts.length}</span>
+                    <span className={styles.summaryLabel}>Product:</span>
+                    <span className={styles.summaryValue}>{selectedProduct.name}</span>
                   </div>
                   <div className={styles.summaryItem}>
                     <span className={styles.summaryLabel}>Discount:</span>
@@ -386,7 +327,7 @@ const FlashSaleModal = ({ isOpen, onClose, onSave, sale, mode }) => {
                   <div className={styles.summaryItem}>
                     <span className={styles.summaryLabel}>Duration:</span>
                     <span className={styles.summaryValue}>
-                      {formData.startDate && formData.endDate ? 
+                      {formData.startDate && formData.endDate ?
                         `${Math.ceil((new Date(formData.endDate) - new Date(formData.startDate)) / (1000 * 60 * 60 * 24))} days`
                         : 'Select dates'
                       }
