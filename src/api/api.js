@@ -122,3 +122,33 @@ export const deleteProduct = async (id) => {
     throw error.response?.data || error;
   }
 };
+
+export const getCategory = async (id) => {
+  try {
+    const response = await axiosInstance.get(`/Categories`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching category:', error);
+    throw error.response?.data || error;
+  }
+};
+
+export const updateCategory = async (id, categoryData) => {
+  try {
+    const response = await axiosInstance.put(`/Categories/${id}`, categoryData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating category:', error);
+    throw error.response?.data || error;
+  }
+};
+
+export const deleteCategory = async (id) => {
+  try {
+    const response = await axiosInstance.delete(`/Categories/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting category:', error);
+    throw error.response?.data || error;
+  }
+};

@@ -211,39 +211,6 @@
   white-space: nowrap;
 }
 
-/* Column width specifications */
-.categoriesTableHeader th:nth-child(1) {
-  width: 50px;
-  text-align: center;
-}
-
-.categoriesTableHeader th:nth-child(2) {
-  width: 25%;
-  min-width: 180px;
-}
-
-.categoriesTableHeader th:nth-child(3) {
-  width: 15%;
-  min-width: 120px;
-}
-
-.categoriesTableHeader th:nth-child(4) {
-  width: 35%;
-  min-width: 200px;
-}
-
-.categoriesTableHeader th:nth-child(5) {
-  width: 12%;
-  min-width: 100px;
-  text-align: center;
-}
-
-.categoriesTableHeader th:nth-child(6) {
-  width: 13%;
-  min-width: 120px;
-  text-align: center;
-}
-
 .checkboxColumn {
   width: 40px;
   text-align: center;
@@ -263,6 +230,7 @@
   margin-left: 4px;
   font-size: 12px;
   opacity: 0.6;
+  vertical-align: middle;
 }
 
 .selectAllCheckbox,
@@ -287,18 +255,7 @@
   vertical-align: middle;
 }
 
-/* Cell alignment specifications */
-.categoriesTableCell:nth-child(1) {
-  text-align: center;
-}
 
-.categoriesTableCell:nth-child(5) {
-  text-align: center;
-}
-
-.categoriesTableCell:nth-child(6) {
-  text-align: center;
-}
 
 .categoryNameCell {
   display: flex;
@@ -349,20 +306,6 @@
   -webkit-box-orient: vertical;
 }
 
-.categoryCategoryImage {
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
-  object-fit: cover;
-  border: 2px solid #f0f0f0;
-  transition: all 0.2s ease;
-}
-
-.categoryCategoryImage:hover {
-  transform: scale(1.1);
-  border-color: #1890ff;
-}
-
 .categoriesStatusBadge {
   padding: 4px 12px;
   border-radius: 16px;
@@ -384,53 +327,27 @@
   border: 1px solid rgba(255, 77, 79, 0.3);
 }
 
-.categoriesCreatedDate {
-  font-size: 14px;
-  color: #666;
-  font-weight: 500;
-  display: block;
-  line-height: 1.3;
-}
-
 .categoriesActions {
   display: flex;
   gap: 8px;
+  justify-content: center;
 }
 
 .categoriesActionButton {
-  padding: 6px 8px;
+  padding: 6px;
   border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 32px;
+  width: 32px;
   height: 32px;
 }
 
-.categoriesEditButton {
-  background: rgba(24, 144, 255, 0.1);
-  color: #1890ff;
-  border-color: rgba(24, 144, 255, 0.3);
-}
-
-.categoriesEditButton:hover {
-  background: rgba(24, 144, 255, 0.2);
-  transform: translateY(-1px);
-}
-
-.categoriesDeleteButton {
-  background: rgba(255, 77, 79, 0.1);
-  color: #ff4d4f;
-  border-color: rgba(255, 77, 79, 0.3);
-}
-
-.categoriesDeleteButton:hover {
-  background: rgba(255, 77, 79, 0.2);
+.categoriesActionButton:hover {
   transform: translateY(-1px);
 }
 
@@ -442,6 +359,7 @@
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
+  min-height: 300px;
 }
 
 .noResultsIcon {
@@ -485,34 +403,50 @@
   box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
 }
 
+/* Loader and Error Styles */
+.centeredLoader, .errorMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  font-size: 16px;
+  color: #666;
+}
+
+.loaderIcon {
+  font-size: 32px;
+  margin-bottom: 16px;
+  animation: spin 1.5s linear infinite;
+}
+
+.errorMessage {
+  color: #ff4d4f;
+  background-color: rgba(255, 77, 79, 0.05);
+  border: 1px solid rgba(255, 77, 79, 0.2);
+  padding: 20px;
+  border-radius: 12px;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
-  .categoriesHeaderActions {
+  .categoriesTopBar, .categoriesPageHeader, .categoriesSearchAndFilters {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: 16px;
   }
   
   .categoriesSearchBar {
     width: 100%;
-  }
-  
-  .categoriesPageHeader {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-  }
-  
-  .categoriesTopBar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-  }
-  
-  .categoriesSearchAndFilters {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
   }
   
   .categoriesTopBarActions {
@@ -530,28 +464,6 @@
   }
   
   .categoriesTable {
-    min-width: 900px;
-  }
-  
-  .categoryDescription {
-    max-width: 200px;
-  }
-  
-  .categoriesActions {
-    flex-direction: column;
-    gap: 4px;
-  }
-  
-  .categoriesActionButton {
-    font-size: 11px;
-    padding: 4px 6px;
-  }
-  
-  .categoryNameCell {
-    min-width: 150px;
-  }
-  
-  .categoryPath {
-    font-size: 10px;
+    min-width: 800px;
   }
 }

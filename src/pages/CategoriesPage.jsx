@@ -1,102 +1,88 @@
-import React, { useState, useMemo } from 'react';
-import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiChevronUp, FiChevronDown } from 'react-icons/fi';
+import React, { useState, useEffect, useMemo } from 'react';
+import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiChevronUp, FiChevronDown, FiLoader } from 'react-icons/fi';
 import classNames from 'classnames';
 import styles from './CategoriesPage.module.css';
 import CategoryModal from '../components/CategoryModal';
 import { ToastContainer } from '../components/Toast';
 import useToast from '../hooks/useToast';
-import { categoryData, getStatusLabel, formatDate, getParentCategoryName, getCategoryPath } from '../constants/categoryData';
+import { getCategory, addCategory, updateCategory, deleteCategory } from '../api/api';
+
+// Helpers moved outside component for better readability
+const getStatusLabel = (isActive) => (isActive ? 'Active' : 'Inactive');
+const getStatusClass = (isActive) => (isActive ? styles.statusActive : styles.statusInactive);
+
+const SortableHeader = ({ children, field, sortField, sortOrder, onSort }) => (
+  <th className={styles.sortableColumn} onClick={() => onSort(field)}>
+    {children}
+    {sortField === field && (
+      sortOrder === 'asc' ? <FiChevronUp className={styles.sortIcon} /> : <FiChevronDown className={styles.sortIcon} />
+    )}
+  </th>
+);
 
 const CategoriesPage = () => {
-  const [categories, setCategories] = useState(categoryData);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
-  const [selectedCategories, setSelectedCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('add');
   const [selectedCategory, setSelectedCategory] = useState(null);
-
   const { toasts, showSuccess, showError, removeToast } = useToast();
 
-  // Filter and sort categories
-  const filteredCategories = useMemo(() => {
-    let filtered = categories.filter(category => {
-      const parentName = getParentCategoryName(category.parentId);
-      const categoryName = category.name || '';
-      const categoryDescription = category.description || '';
-      return categoryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        categoryDescription.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        parentName.toLowerCase().includes(searchTerm.toLowerCase());
-    });
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await getCategory();
+        const data = Array.isArray(response) ? response : Array.isArray(response?.data) ? response.data : [];
+        setCategories(data);
+      } catch (err) {
+        console.error(err);
+        setError(err.message || 'Error loading categories');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
-    // Sort categories
+  const getParentCategoryName = (parentId) => {
+    if (!parentId) return '—';
+    const parent = categories.find(c => c.id === parentId);
+    return parent ? parent.name : '—';
+  };
+
+  const filteredCategories = useMemo(() => {
+    let filtered = categories.filter(cat =>
+      (cat.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (cat.description || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     filtered.sort((a, b) => {
-      let aValue = a[sortField];
-      let bValue = b[sortField];
-      
-      if (sortField === 'createdDate') {
-        aValue = new Date(aValue);
-        bValue = new Date(bValue);
-      } else if (sortField === 'parentCategory') {
-        aValue = getParentCategoryName(a.parentId);
-        bValue = getParentCategoryName(b.parentId);
+      let aVal = a[sortField];
+      let bVal = b[sortField];
+
+      if (sortField === 'createdAt') {
+        aVal = new Date(aVal);
+        bVal = new Date(bVal);
       } else {
-        aValue = String(aValue).toLowerCase();
-        bValue = String(bValue).toLowerCase();
+        aVal = String(aVal ?? '').toLowerCase();
+        bVal = String(bVal ?? '').toLowerCase();
       }
-      
-      if (sortOrder === 'asc') {
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-      } else {
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-      }
+
+      if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
     });
 
     return filtered;
   }, [categories, searchTerm, sortField, sortOrder]);
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
   const handleSortChange = (field) => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortOrder('asc');
-    }
-  };
-
-  const handleSelectCategory = (categoryId) => {
-    setSelectedCategories(prev => 
-      prev.includes(categoryId) 
-        ? prev.filter(id => id !== categoryId)
-        : [...prev, categoryId]
-    );
-  };
-
-  const handleSelectAll = () => {
-    if (selectedCategories.length === filteredCategories.length) {
-      setSelectedCategories([]);
-    } else {
-      setSelectedCategories(filteredCategories.map(c => c.id));
-    }
-  };
-
-  const handleBulkDelete = () => {
-    if (selectedCategories.length === 0) return;
-    
-    const categoryNames = selectedCategories.map(id => 
-      categories.find(c => c.id === id)?.name
-    ).filter(Boolean);
-    
-    if (window.confirm(`Are you sure you want to delete ${selectedCategories.length} selected categories?\n\nCategories: ${categoryNames.join(', ')}\n\nThis action cannot be undone.`)) {
-      setCategories(prev => prev.filter(c => !selectedCategories.includes(c.id)));
-      setSelectedCategories([]);
-      showSuccess(`Successfully deleted ${selectedCategories.length} categories`);
-    }
+    setSortOrder(sortField === field && sortOrder === 'asc' ? 'desc' : 'asc');
+    setSortField(field);
   };
 
   const handleAddCategory = () => {
@@ -111,61 +97,57 @@ const CategoriesPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteCategory = (categoryId) => {
-    const category = categories.find(c => c.id === categoryId);
-    if (window.confirm(`Are you sure you want to delete "${category?.name}"? This action cannot be undone.`)) {
-      setCategories(prev => prev.filter(c => c.id !== categoryId));
-      showSuccess(`Category "${category?.name}" deleted successfully!`);
+  const handleDeleteCategory = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this category?')) return;
+    try {
+      await deleteCategory(id);
+      setCategories(prev => prev.filter(c => c.id !== id));
+      showSuccess('Category deleted.');
+    } catch (err) {
+      console.error(err);
+      showError(err.message || 'Error deleting category.');
     }
   };
 
-  const handleSaveCategory = (categoryData) => {
-    if (modalMode === 'add') {
-      const newCategory = {
-        ...categoryData,
-        id: Math.max(...categories.map(c => c.id)) + 1,
-        createdDate: new Date().toISOString()
-      };
-      setCategories(prev => [newCategory, ...prev]);
-      showSuccess(`Category "${newCategory.name}" created successfully!`);
-    } else if (modalMode === 'edit') {
-      setCategories(prev => prev.map(c => 
-        c.id === categoryData.id ? { ...categoryData, createdDate: c.createdDate } : c
-      ));
-      showSuccess(`Category "${categoryData.name}" updated successfully!`);
+  const handleSaveCategory = async (data) => {
+    try {
+      if (modalMode === 'edit') {
+        const updatedCategory = await updateCategory(data.id, data);
+        setCategories(prev => prev.map(c => (c.id === data.id ? updatedCategory : c)));
+        showSuccess(`Category "${data.name}" updated.`);
+      } else {
+        const newCategory = await addCategory(data);
+        setCategories(prev => [newCategory, ...prev]);
+        showSuccess(`Category "${data.name}" added.`);
+      }
+      setIsModalOpen(false);
+    } catch (err) {
+      showError(err.message || `Error saving category.`);
     }
   };
 
-  const getStatusClass = (status) => {
-    return status === 'active' ? styles.statusActive : styles.statusInactive;
-  };
+  if (loading) return <div className={styles.centeredLoader}><FiLoader className={styles.loaderIcon} /><span>Loading Categories...</span></div>;
+  if (error) return <div className={styles.errorMessage}>Error: {error}</div>;
 
   return (
     <div className={styles.categoriesPageContainer}>
-      {/* Page Header */}
       <div className={styles.categoriesPageHeader}>
-        <div className={styles.categoriesHeaderLeft}>
-          <h1 className={styles.categoriesPageTitle}>Categories</h1>
-          <p className={styles.categoriesPageSubtitle}>
-            Manage feed categories with hierarchical organization
-          </p>
-        </div>
+        <h1 className={styles.categoriesPageTitle}>Categories</h1>
+        <p className={styles.categoriesPageSubtitle}>Manage product categories with hierarchical organization.</p>
       </div>
 
-      {/* Top Bar Controls */}
       <div className={styles.categoriesTopBar}>
         <div className={styles.categoriesSearchAndFilters}>
           <div className={styles.categoriesSearchBar}>
             <input
               type="text"
-              placeholder="Search categories, parent, description..."
+              placeholder="Search categories..."
               value={searchTerm}
-              onChange={handleSearchChange}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
             <FiSearch className={styles.searchIcon} />
           </div>
-
-          <select 
+          <select
             className={styles.categoriesSortSelect}
             value={`${sortField}-${sortOrder}`}
             onChange={(e) => {
@@ -176,158 +158,63 @@ const CategoriesPage = () => {
           >
             <option value="name-asc">Name A-Z</option>
             <option value="name-desc">Name Z-A</option>
-            <option value="parentCategory-asc">Parent A-Z</option>
-            <option value="parentCategory-desc">Parent Z-A</option>
-            <option value="createdDate-desc">Newest First</option>
-            <option value="createdDate-asc">Oldest First</option>
-            <option value="status-asc">Status A-Z</option>
-            <option value="status-desc">Status Z-A</option>
+            <option value="createdAt-desc">Newest</option>
+            <option value="createdAt-asc">Oldest</option>
           </select>
         </div>
-
         <div className={styles.categoriesTopBarActions}>
-          {selectedCategories.length > 0 && (
-            <button
-              className={styles.categoriesBulkDeleteButton}
-              onClick={handleBulkDelete}
-            >
-              <FiTrash2 />
-              Delete ({selectedCategories.length})
-            </button>
-          )}
-          
-          <button
-            className={styles.categoriesAddButton}
-            onClick={handleAddCategory}
-          >
-            <FiPlus />
-            Add New Category
+          <button className={styles.categoriesAddButton} onClick={handleAddCategory}>
+            <FiPlus /> Add Category
           </button>
         </div>
       </div>
 
-      {/* Categories Table */}
       <div className={styles.categoriesTableContainer}>
         <table className={styles.categoriesTable}>
           <thead className={styles.categoriesTableHeader}>
             <tr>
-              <th className={styles.checkboxColumn}>
-                <input
-                  type="checkbox"
-                  checked={selectedCategories.length === filteredCategories.length && filteredCategories.length > 0}
-                  onChange={handleSelectAll}
-                  className={styles.selectAllCheckbox}
-                />
-              </th>
-              <th className={styles.sortableColumn} onClick={() => handleSortChange('name')}>
-                Category Name
-                {sortField === 'name' ? (
-                  sortOrder === 'asc' ? <FiChevronUp className={styles.sortIcon} /> : <FiChevronDown className={styles.sortIcon} />
-                ) : (
-                  <FiChevronUp className={styles.sortIcon} style={{ opacity: 0.3 }} />
-                )}
-              </th>
-              <th className={styles.sortableColumn} onClick={() => handleSortChange('parentCategory')}>
-                Parent Category
-                {sortField === 'parentCategory' ? (
-                  sortOrder === 'asc' ? <FiChevronUp className={styles.sortIcon} /> : <FiChevronDown className={styles.sortIcon} />
-                ) : (
-                  <FiChevronUp className={styles.sortIcon} style={{ opacity: 0.3 }} />
-                )}
-              </th>
+              <SortableHeader field="name" sortField={sortField} sortOrder={sortOrder} onSort={handleSortChange}>Name</SortableHeader>
+              <th>Parent Category</th>
               <th>Description</th>
-              <th className={styles.sortableColumn} onClick={() => handleSortChange('status')}>
-                Status
-                {sortField === 'status' ? (
-                  sortOrder === 'asc' ? <FiChevronUp className={styles.sortIcon} /> : <FiChevronDown className={styles.sortIcon} />
-                ) : (
-                  <FiChevronUp className={styles.sortIcon} style={{ opacity: 0.3 }} />
-                )}
-              </th>
+              <SortableHeader field="isActive" sortField={sortField} sortOrder={sortOrder} onSort={handleSortChange}>Status</SortableHeader>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredCategories.map((category) => (
+            {filteredCategories.map(category => (
               <tr key={category.id} className={styles.categoriesTableRow}>
+                <td className={styles.categoriesTableCell}>{category.name}</td>
+                <td className={styles.categoriesTableCell}><span className={styles.parentCategoryBadge}>{getParentCategoryName(category.parentCategoryId)}</span></td>
+                <td className={styles.categoriesTableCell}>{category.description || '—'}</td>
                 <td className={styles.categoriesTableCell}>
-                  <input
-                    type="checkbox"
-                    checked={selectedCategories.includes(category.id)}
-                    onChange={() => handleSelectCategory(category.id)}
-                    className={styles.categoryCheckbox}
-                  />
-                </td>
-                <td className={styles.categoriesTableCell}>
-                  <div className={styles.categoryNameCell}>
-                    <div className={styles.categoryCategoryName}>
-                      {category.name}
-                    </div>
-                    <div className={styles.categoryPath}>
-                      {getCategoryPath(category.id)}
-                    </div>
-                  </div>
-                </td>
-                <td className={styles.categoriesTableCell}>
-                  <span className={styles.parentCategoryBadge}>
-                    {getParentCategoryName(category.parentId)}
-                  </span>
-                </td>
-                <td className={styles.categoriesTableCell}>
-                  <div className={styles.categoryDescription}>
-                    {category.description || 'No description'}
-                  </div>
-                </td>
-                <td className={styles.categoriesTableCell}>
-                  <span className={classNames(styles.categoriesStatusBadge, getStatusClass(category.status))}>
-                    {getStatusLabel(category.status)}
+                  <span className={classNames(styles.categoriesStatusBadge, getStatusClass(category.isActive))}>
+                    {getStatusLabel(category.isActive)}
                   </span>
                 </td>
                 <td className={styles.categoriesTableCell}>
                   <div className={styles.categoriesActions}>
-                    <button
-                      className={classNames(styles.categoriesActionButton, styles.categoriesEditButton)}
-                      onClick={() => handleEditCategory(category)}
-                      title="Edit this category"
-                    >
-                      <FiEdit2 />
-                    </button>
-                    <button
-                      className={classNames(styles.categoriesActionButton, styles.categoriesDeleteButton)}
-                      onClick={() => handleDeleteCategory(category.id)}
-                      title="Delete this category"
-                    >
-                      <FiTrash2 />
-                    </button>
+                    <button className={classNames(styles.categoriesActionButton, styles.categoriesEditButton)} onClick={() => handleEditCategory(category)}><FiEdit2 /></button>
+                    <button className={classNames(styles.categoriesActionButton, styles.categoriesDeleteButton)} onClick={() => handleDeleteCategory(category.id)}><FiTrash2 /></button>
                   </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-
-        {/* No Results */}
         {filteredCategories.length === 0 && (
           <div className={styles.noResults}>
             <div className={styles.noResultsIcon}>📂</div>
-            <div className={styles.noResultsTitle}>No categories found</div>
+            <div className={styles.noResultsTitle}>No Categories Found</div>
             <div className={styles.noResultsSubtitle}>
-              {searchTerm ? 'Try adjusting your search terms' : 'Get started by adding your first category'}
+              {searchTerm ? 'Adjust your search or' : 'Get started by'} adding a new category.
             </div>
-            {!searchTerm && (
-              <button
-                className={styles.noResultsButton}
-                onClick={handleAddCategory}
-              >
-                <FiPlus />
-                Add New Category
-              </button>
-            )}
+            <button className={styles.noResultsButton} onClick={handleAddCategory}>
+              <FiPlus /> Add New Category
+            </button>
           </div>
         )}
       </div>
 
-      {/* Category Modal */}
       <CategoryModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -336,8 +223,6 @@ const CategoriesPage = () => {
         categories={categories}
         mode={modalMode}
       />
-
-      {/* Toast Notifications */}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
