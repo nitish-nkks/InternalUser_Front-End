@@ -179,9 +179,8 @@ export const getCategoryLabel = (category) => {
   return option ? option.label : category;
 };
 
-export const getStatusLabel = (status) => {
-  const option = statusOptions.find(opt => opt.value === status);
-  return option ? option.label : status;
+export const getStatusLabel = (isActive) => {
+  return isActive ? 'Active' : 'Inactive';
 };
 
 export const formatDate = (dateString) => {

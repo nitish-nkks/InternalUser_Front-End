@@ -1,63 +1,258 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { FiSearch, FiFilter, FiPlus, FiEdit2, FiTrash2, FiEye, FiMoreVertical, FiChevronUp, FiChevronDown } from 'react-icons/fi';
 import classNames from 'classnames';
 import styles from './ProductsPage.module.css';
+import productModalStyles from '../components/ProductModal.module.css';
 import ProductModal from '../components/ProductModal';
 import ImageModal from '../components/ImageModal';
 import { ToastContainer } from '../components/Toast';
 import { useAdminLayout } from '../contexts/AdminLayoutContext';
 import useToast from '../hooks/useToast';
-import { productData, getCategoryLabel, getStatusLabel, formatDate, categoryOptions, statusOptions } from '../constants/productData';
+import { getCategoryLabel, formatDate, categoryOptions } from '../constants/productData';
+import { getAllProductsFiltered, deleteProduct, updateProduct } from '../api/api';
+
+const UpdateModal = ({ isOpen, onClose, onSave, product }) => {
+  const [formData, setFormData] = useState({
+    description: product ? product.description : '',
+    price: product ? product.price : 0,
+    discountPercentage: product ? product.discountPercentage : 0,
+    stockQuantity: product ? product.stockQuantity : 0,
+    minOrderQuantity: product ? product.minOrderQuantity : 0,
+    isFeatured: product ? product.isFeatured : false,
+    isNewProduct: product ? product.isNewProduct : false,
+    isBestSeller: product ? product.isBestSeller : false,
+    image: product ? product.image : ''
+  });
+
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        description: product.description || '',
+        price: product.price || 0,
+        discountPercentage: product.discountPercentage || 0,
+        stockQuantity: product.stockQuantity || 0,
+        minOrderQuantity: product.minOrderQuantity || 0,
+        isFeatured: !!product.isFeatured,
+        isNewProduct: !!product.isNewProduct,
+        isBestSeller: !!product.isBestSeller,
+        image: product.image || ''
+      });
+    }
+  }, [product]);
+
+  if (!isOpen || !product) return null;
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const updatedData = {
+      id: product.id,
+      name: product.name,
+      description: formData.description,
+      price: parseFloat(formData.price),
+      discountPercentage: parseFloat(formData.discountPercentage),
+      stockQuantity: parseFloat(formData.stockQuantity),
+      minOrderQuantity: parseFloat(formData.minOrderQuantity),
+      isFeatured: formData.isFeatured,
+      isNewProduct: formData.isNewProduct,
+      isBestSeller: formData.isBestSeller,
+      image: formData.image
+    };
+    onSave(updatedData);
+  };
+
+  return (
+    <div className={productModalStyles.modalOverlay}>
+      <div className={productModalStyles.modalContent}>
+        <h2 className={productModalStyles.modalTitle}>Update Product</h2>
+        <form onSubmit={handleSubmit} className={productModalStyles.modalForm}>
+          <div className={productModalStyles.formGroup}>
+            <label className={productModalStyles.label}>Description</label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              required
+              className={productModalStyles.textarea}
+            />
+          </div>
+          <div className={productModalStyles.formGroup}>
+            <label className={productModalStyles.label}>Price (₹)</label>
+            <input
+              type="number"
+              name="price"
+              min="0"
+              step="0.01"
+              value={formData.price}
+              onChange={handleChange}
+              required
+              className={productModalStyles.input}
+            />
+          </div>
+          <div className={productModalStyles.formGroup}>
+            <label className={productModalStyles.label}>Discount (%)</label>
+            <input
+              type="number"
+              name="discountPercentage"
+              min="0"
+              max="100"
+              value={formData.discountPercentage}
+              onChange={handleChange}
+              className={productModalStyles.input}
+            />
+          </div>
+          <div className={productModalStyles.formGroup}>
+            <label className={productModalStyles.label}>Stock Quantity</label>
+            <input
+              type="number"
+              name="stockQuantity"
+              min="0"
+              value={formData.stockQuantity}
+              onChange={handleChange}
+              required
+              className={productModalStyles.input}
+            />
+          </div>
+          <div className={productModalStyles.formGroup}>
+            <label className={productModalStyles.label}>Min Order Quantity</label>
+            <input
+              type="number"
+              name="minOrderQuantity"
+              min="0"
+              value={formData.minOrderQuantity}
+              onChange={handleChange}
+              required
+              className={productModalStyles.input}
+            />
+          </div>
+          <div className={productModalStyles.formGroup}>
+            <label>
+              <input
+                type="checkbox"
+                name="isFeatured"
+                checked={formData.isFeatured}
+                onChange={handleChange}
+              />
+              {' '}Featured Product
+            </label>
+          </div>
+          <div className={productModalStyles.formGroup}>
+            <label>
+              <input
+                type="checkbox"
+                name="isNewProduct"
+                checked={formData.isNewProduct}
+                onChange={handleChange}
+              />
+              {' '}New Product
+            </label>
+          </div>
+          <div className={productModalStyles.formGroup}>
+            <label>
+              <input
+                type="checkbox"
+                name="isBestSeller"
+                checked={formData.isBestSeller}
+                onChange={handleChange}
+              />
+              {' '}Best Seller
+            </label>
+          </div>
+          <div className={productModalStyles.formGroup}>
+            <label className={productModalStyles.label}>Image URL</label>
+            <input
+              type="text"
+              name="image"
+              value={formData.image}
+              onChange={handleChange}
+              required
+              className={productModalStyles.input}
+            />
+          </div>
+          <div className={productModalStyles.modalFooter}>
+            <button type="submit" className={productModalStyles.modalButton}>
+              Save
+            </button>
+            <button type="button" onClick={onClose} className={productModalStyles.modalButton}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 const ProductsPage = () => {
-  const [products, setProducts] = useState(productData);
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
   const [sortField, setSortField] = useState('createdDate');
   const [sortOrder, setSortOrder] = useState('desc');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('add');
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [originalProductData, setOriginalProductData] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [expandedDescriptions, setExpandedDescriptions] = useState(new Set());
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ src: '', alt: '' });
+  const [totalCount, setTotalCount] = useState(0);
 
   const { openFilterSidebar } = useAdminLayout();
   const { toasts, showSuccess, showError, removeToast } = useToast();
 
-  // Filter and sort products
-  const filteredProducts = useMemo(() => {
-    let filtered = products.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.sku?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesCategory = !filterCategory || product.category === filterCategory;
-      const matchesStatus = !filterStatus || product.status === filterStatus;
-      
-      return matchesSearch && matchesCategory && matchesStatus;
-    });
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await getAllProductsFiltered({
+          page: currentPage,
+          pageSize: itemsPerPage,
+          searchTerm: searchTerm,
+        });
+        setProducts(response.data);
+        setTotalCount(response.totalCount);
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+        setError("Failed to load products. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    // Sort products
+    fetchProducts();
+  }, [currentPage, itemsPerPage, searchTerm, filterCategory, sortField, sortOrder]);
+
+  const filteredProducts = useMemo(() => {
+    let filtered = products;
+
     filtered.sort((a, b) => {
       let aValue = a[sortField];
       let bValue = b[sortField];
-      
-      if (sortField === 'createdDate') {
+
+      if (sortField === 'createdAt') {
         aValue = new Date(aValue);
         bValue = new Date(bValue);
-      } else if (sortField === 'price' || sortField === 'stock') {
+      } else if (sortField === 'price' || sortField === 'stockQuantity') {
         aValue = Number(aValue);
         bValue = Number(bValue);
       } else {
         aValue = String(aValue).toLowerCase();
         bValue = String(bValue).toLowerCase();
       }
-      
+
       if (sortOrder === 'asc') {
         return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
       } else {
@@ -66,15 +261,13 @@ const ProductsPage = () => {
     });
 
     return filtered;
-  }, [products, searchTerm, filterCategory, filterStatus, sortField, sortOrder]);
+  }, [products, sortField, sortOrder]);
 
-  // Paginate products
   const paginatedProducts = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredProducts.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredProducts, currentPage, itemsPerPage]);
+    return products;
+  }, [products]);
 
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -84,8 +277,6 @@ const ProductsPage = () => {
   const handleFilterChange = (type, value) => {
     if (type === 'category') {
       setFilterCategory(value);
-    } else if (type === 'status') {
-      setFilterStatus(value);
     }
     setCurrentPage(1);
   };
@@ -99,7 +290,6 @@ const ProductsPage = () => {
     }
     setCurrentPage(1);
   };
-
 
   const handleViewProduct = (product) => {
     setSelectedProduct(product);
@@ -115,32 +305,76 @@ const ProductsPage = () => {
 
   const handleEditProduct = (product) => {
     setSelectedProduct(product);
+    setOriginalProductData(product);
     setModalMode('edit');
     setIsModalOpen(true);
   };
 
-  const handleDeleteProduct = (productId) => {
+  const handleDeleteProduct = async (productId) => {
     const product = products.find(p => p.id === productId);
     if (window.confirm(`Are you sure you want to remove "${product?.name}"? This action cannot be undone.`)) {
-      setProducts(prev => prev.filter(p => p.id !== productId));
-      showSuccess(`Product "${product?.name}" removed successfully!`);
+      try {
+        await deleteProduct(productId);
+        showSuccess(`Product "${product?.name}" removed successfully!`);
+        const response = await getAllProductsFiltered({
+          page: currentPage,
+          pageSize: itemsPerPage,
+          searchTerm: searchTerm,
+        });
+        setProducts(response.data);
+        setTotalCount(response.totalCount);
+      } catch (err) {
+        console.error("Failed to delete product:", err);
+        showError(`Failed to delete product: ${err.message || err}`);
+      }
     }
   };
 
-  const handleSaveProduct = (productData) => {
-    if (modalMode === 'add') {
-      const newProduct = {
-        ...productData,
-        id: Math.max(...products.map(p => p.id)) + 1,
-        createdDate: new Date().toISOString()
-      };
-      setProducts(prev => [newProduct, ...prev]); // Add new product at the beginning
-      showSuccess(`Product "${newProduct.name}" created successfully!`);
-    } else if (modalMode === 'edit') {
-      setProducts(prev => prev.map(p => 
-        p.id === productData.id ? { ...productData, createdDate: p.createdDate } : p
-      ));
-      showSuccess(`Product "${productData.name}" updated successfully!`);
+  const handleSaveProduct = async (productData) => {
+    try {
+      if (modalMode === 'add') {
+        showSuccess(`Product "${productData.name}" created successfully!`);
+      } else if (modalMode === 'edit') {
+        const fieldsToCompare = [
+          'description',
+          'price',
+          'discountPercentage',
+          'stockQuantity',
+          'minOrderQuantity',
+          'isFeatured',
+          'isNewProduct',
+          'isBestSeller'
+        ];
+
+        const payload = {};
+        fieldsToCompare.forEach(field => {
+          if (productData[field] !== originalProductData[field]) {
+            payload[field] = productData[field];
+          }
+        });
+
+        if (productData.image !== originalProductData.image) {
+          payload.ProductImages = [productData.image];
+        }
+
+        if (Object.keys(payload).length > 0) {
+          await updateProduct(productData.id, payload);
+          showSuccess(`Product "${productData.name}" updated successfully!`);
+        } else {
+          showSuccess(`No changes detected for product "${productData.name}".`);
+        }
+        setIsModalOpen(false);
+        const response = await getAllProductsFiltered({
+          page: currentPage,
+          pageSize: itemsPerPage,
+          searchTerm: searchTerm,
+        });
+        setProducts(response.data);
+        setTotalCount(response.totalCount);
+      }
+    } catch (err) {
+      console.error("Failed to save product:", err);
+      showError(`Failed to save product: ${err.message || err}`);
     }
   };
 
@@ -148,10 +382,6 @@ const ProductsPage = () => {
     if (stock <= 20) return styles.productsStockLow;
     if (stock <= 50) return styles.productsStockMedium;
     return styles.productsStockHigh;
-  };
-
-  const getStatusClass = (status) => {
-    return status === 'active' ? styles.productsStatusActive : styles.productsStatusInactive;
   };
 
   const handlePageChange = (page) => {
@@ -178,10 +408,10 @@ const ProductsPage = () => {
   const renderPaginationButtons = () => {
     const buttons = [];
     const maxVisiblePages = 5;
-    
+
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
@@ -228,7 +458,7 @@ const ProductsPage = () => {
             <FiSearch className={styles.searchIcon} />
           </div>
 
-          <select 
+          <select
             className={styles.productsFilterSelect}
             value={filterCategory}
             onChange={(e) => handleFilterChange('category', e.target.value)}
@@ -241,20 +471,7 @@ const ProductsPage = () => {
             ))}
           </select>
 
-          <select 
-            className={styles.productsFilterSelect}
-            value={filterStatus}
-            onChange={(e) => handleFilterChange('status', e.target.value)}
-          >
-            <option value="">All Status</option>
-            {statusOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-
-          <select 
+          <select
             className={styles.productsSortSelect}
             value={`${sortField}-${sortOrder}`}
             onChange={(e) => {
@@ -263,14 +480,14 @@ const ProductsPage = () => {
               setSortOrder(order);
             }}
           >
-            <option value="createdDate-desc">Newest First</option>
-            <option value="createdDate-asc">Oldest First</option>
+            <option value="createdAt-desc">Newest First</option>
+            <option value="createdAt-asc">Oldest First</option>
             <option value="name-asc">Name A-Z</option>
             <option value="name-desc">Name Z-A</option>
             <option value="price-asc">Price Low to High</option>
             <option value="price-desc">Price High to Low</option>
-            <option value="stock-asc">Stock Low to High</option>
-            <option value="stock-desc">Stock High to Low</option>
+            <option value="stockQuantity-asc">Stock Low to High</option>
+            <option value="stockQuantity-desc">Stock High to Low</option>
           </select>
         </div>
 
@@ -291,7 +508,6 @@ const ProductsPage = () => {
           <thead className={styles.productsTableHeader}>
             <tr>
               <th>Product Name</th>
-              <th>SKU/Code</th>
               <th>Category</th>
               <th className={styles.sortableColumn} onClick={() => handleSortChange('price')}>
                 Price
@@ -301,7 +517,7 @@ const ProductsPage = () => {
                   <FiChevronUp className={styles.sortIcon} style={{ opacity: 0.3 }} />
                 )}
               </th>
-              <th>Discount Price</th>
+              <th>Discount Percentage</th>
               <th className={styles.sortableColumn} onClick={() => handleSortChange('stock')}>
                 Stock
                 {sortField === 'stock' ? (
@@ -310,7 +526,6 @@ const ProductsPage = () => {
                   <FiChevronUp className={styles.sortIcon} style={{ opacity: 0.3 }} />
                 )}
               </th>
-              <th>Status</th>
               <th className={styles.sortableColumn} onClick={() => handleSortChange('createdDate')}>
                 Created Date
                 {sortField === 'createdDate' ? (
@@ -327,33 +542,14 @@ const ProductsPage = () => {
               <tr key={product.id} className={styles.productsTableRow}>
                 <td className={styles.productsTableCell}>
                   <div className={styles.productNameCell}>
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className={styles.productsProductImage}
-                      onClick={() => handleImageClick(product.image, product.name)}
-                      style={{ cursor: 'pointer' }}
-                      onError={(e) => {
-                        e.target.onerror = null; 
-                        e.target.style.display = 'none';
-                        const parent = e.target.parentElement;
-                        const placeholder = document.createElement('div');
-                        placeholder.className = styles.imagePlaceholder;
-                        placeholder.innerHTML = '<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M19 3H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zM5 19V5h14l.002 14H5z"></path><path d="m10 14-1-1-3 4h12l-5-7-3 4z"></path></svg>';
-                        if (parent) {
-                          parent.appendChild(placeholder);
-                        }
-                      }}
-                    />
                     <div className={styles.productInfo}>
                       <div className={styles.productsProductName}>{product.name}</div>
                       <div className={styles.productsProductDescription}>
                         {product.description && product.description.length > 50 ? (
                           <>
-                            {expandedDescriptions.has(product.id) 
-                              ? product.description 
-                              : `${product.description.substring(0, 50)}...`
-                            }
+                            {expandedDescriptions.has(product.id)
+                              ? product.description
+                              : `${product.description.substring(0, 50)}...`}
                             <button
                               className={styles.readMoreButton}
                               onClick={() => toggleDescription(product.id)}
@@ -368,14 +564,10 @@ const ProductsPage = () => {
                     </div>
                   </div>
                 </td>
-                <td className={styles.productsTableCell}>
-                  <span className={styles.productSku}>
-                    {product.sku || `SKU-${product.id.toString().padStart(4, '0')}`}
-                  </span>
-                </td>
+
                 <td className={styles.productsTableCell}>
                   <span className={styles.categoryBadge}>
-                    {getCategoryLabel(product.category)}
+                    {product.categoryId}
                   </span>
                 </td>
                 <td className={styles.productsTableCell}>
@@ -383,22 +575,17 @@ const ProductsPage = () => {
                 </td>
                 <td className={styles.productsTableCell}>
                   <span className={styles.discountPrice}>
-                    {product.discountPrice ? `₹${product.discountPrice.toFixed(2)}` : '-'}
+                    {product.discountPercentage ? `${product.discountPercentage}%` : '-'}
                   </span>
                 </td>
                 <td className={styles.productsTableCell}>
-                  <span className={classNames(styles.productsStock, getStockClass(product.stock))}>
-                    {product.stock}
-                  </span>
-                </td>
-                <td className={styles.productsTableCell}>
-                  <span className={classNames(styles.productsStatusBadge, getStatusClass(product.status))}>
-                    {getStatusLabel(product.status)}
+                  <span className={classNames(styles.productsStock, getStockClass(product.stockQuantity))}>
+                    {product.stockQuantity}
                   </span>
                 </td>
                 <td className={styles.productsTableCell}>
                   <span className={styles.productsCreatedDate}>
-                    {formatDate(product.createdDate)}
+                    {formatDate(product.createdAt)}
                   </span>
                 </td>
                 <td className={styles.productsTableCell}>
@@ -459,14 +646,23 @@ const ProductsPage = () => {
         </div>
       </div>
 
-      {/* Product Modal */}
-      <ProductModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveProduct}
-        product={selectedProduct}
-        mode={modalMode}
-      />
+      {/* Add or Update Product Modal */}
+      {modalMode === 'edit' ? (
+        <UpdateModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveProduct}
+          product={selectedProduct}
+        />
+      ) : (
+        <ProductModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveProduct}
+          product={selectedProduct}
+          mode={modalMode}
+        />
+      )}
 
       {/* Image Modal */}
       <ImageModal

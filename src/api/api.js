@@ -86,3 +86,39 @@ export const getAllProducts = async () => {
     throw error.response?.data || error;
   }
 };
+
+export const getAllProductsFiltered = async (filter = {}) => {
+  try {
+    const response = await axiosInstance.get('/Products', {
+      params: {
+        Page: filter.page || 1,
+        PageSize: filter.pageSize || 10,
+        Descending: filter.descending || false
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching all products:', error);
+    throw error;
+  }
+};
+
+export const updateProduct = async (id, productData) => {
+  try {
+    const response = await axiosInstance.put(`/Products/${id}`, productData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating product:', error);
+    throw error.response?.data || error;
+  }
+};
+
+export const deleteProduct = async (id) => {
+  try {
+    const response = await axiosInstance.delete(`/Products/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    throw error.response?.data || error;
+  }
+};
