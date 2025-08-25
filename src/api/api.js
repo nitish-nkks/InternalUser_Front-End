@@ -189,3 +189,13 @@ export const deleteInternalUser = async (id) => {
     throw error.response?.data || error;
   }
 };
+
+export const getAllOrders = async () => {
+  try {
+    const response = await axiosInstance.get("/Order");
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching all orders:', error);
+    throw error.response?.data || error;
+  }
+};

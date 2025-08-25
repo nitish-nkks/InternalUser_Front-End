@@ -1,27 +1,24 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { FiSearch, FiEye, FiEdit2, FiX, FiChevronUp, FiChevronDown } from 'react-icons/fi';
 import classNames from 'classnames';
 import styles from './OrdersPage.module.css';
 import OrderModal from '../components/OrderModal';
 import { ToastContainer } from '../components/Toast';
 import useToast from '../hooks/useToast';
-import { 
-  orderData, 
-  orderStatusOptions, 
-  paymentStatusOptions,
-  getOrderStatusLabel, 
-  getPaymentStatusLabel, 
-  formatDate, 
+import {
+  orderData,
+  orderStatusOptions,
+  getOrderStatusLabel,
+  formatDate,
   formatCurrency,
   getOrderStatusColor,
-  getPaymentStatusColor
 } from '../constants/orderData';
+import { getAllOrders } from '../api/api';
 
 const OrdersPage = () => {
-  const [orders, setOrders] = useState(orderData);
+  const [orders, setOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterOrderStatus, setFilterOrderStatus] = useState('');
-  const [filterPaymentStatus, setFilterPaymentStatus] = useState('');
   const [sortField, setSortField] = useState('orderDate');
   const [sortOrder, setSortOrder] = useState('desc');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,24 +29,61 @@ const OrdersPage = () => {
 
   const { toasts, showSuccess, showError, removeToast } = useToast();
 
+  const mapOrderStatus = (status) => {
+    switch (status) {
+      case 0: return 'Order_Placed';
+      case 1: return 'Processing';
+      case 2: return 'Shipped';
+      case 3: return 'Delivered';
+      case 4: return 'Cancelled';
+      case 5: return 'Return_Requested';
+      case 6: return 'Returned';
+      default: return 'Pending';
+    }
+  };
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await getAllOrders();
+
+        const mappedOrders = response.data.map(order => ({
+          id: order.id.toString(),
+          customerName: `${order.user.firstName} ${order.user.lastName}`,
+          customerEmail: order.user.email,
+          orderDate: order.createdAt,
+          orderStatus: mapOrderStatus(order.status),
+          totalAmount: order.totalAmount,
+          shippingAddress: order.shippingAddress || "N/A",
+        }));
+
+        setOrders(mappedOrders);
+      } catch (error) {
+        showError("Failed to fetch orders");
+        console.error("Error fetching orders:", error);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+
   // Filter and sort orders
   const filteredOrders = useMemo(() => {
     let filtered = orders.filter(order => {
       const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase());
-      
+
       const matchesOrderStatus = !filterOrderStatus || order.orderStatus === filterOrderStatus;
-      const matchesPaymentStatus = !filterPaymentStatus || order.paymentStatus === filterPaymentStatus;
-      
-      return matchesSearch && matchesOrderStatus && matchesPaymentStatus;
+      return matchesSearch && matchesOrderStatus;
     });
 
     // Sort orders
     filtered.sort((a, b) => {
       let aValue = a[sortField];
       let bValue = b[sortField];
-      
+
       if (sortField === 'orderDate') {
         aValue = new Date(aValue);
         bValue = new Date(bValue);
@@ -60,7 +94,7 @@ const OrdersPage = () => {
         aValue = String(aValue).toLowerCase();
         bValue = String(bValue).toLowerCase();
       }
-      
+
       if (sortOrder === 'asc') {
         return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
       } else {
@@ -69,7 +103,7 @@ const OrdersPage = () => {
     });
 
     return filtered;
-  }, [orders, searchTerm, filterOrderStatus, filterPaymentStatus, sortField, sortOrder]);
+  }, [orders, searchTerm, filterOrderStatus, sortField, sortOrder]);
 
   // Paginate orders
   const paginatedOrders = useMemo(() => {
@@ -87,8 +121,6 @@ const OrdersPage = () => {
   const handleFilterChange = (type, value) => {
     if (type === 'orderStatus') {
       setFilterOrderStatus(value);
-    } else if (type === 'paymentStatus') {
-      setFilterPaymentStatus(value);
     }
     setCurrentPage(1);
   };
@@ -118,8 +150,8 @@ const OrdersPage = () => {
   const handleCancelOrder = (orderId) => {
     const order = orders.find(o => o.id === orderId);
     if (window.confirm(`Are you sure you want to cancel order "${order?.id}"? This action cannot be undone.`)) {
-      setOrders(prev => prev.map(o => 
-        o.id === orderId 
+      setOrders(prev => prev.map(o =>
+        o.id === orderId
           ? { ...o, orderStatus: 'cancelled', paymentStatus: 'refunded', totalAmount: 0 }
           : o
       ));
@@ -128,7 +160,7 @@ const OrdersPage = () => {
   };
 
   const handleSaveOrder = (orderData) => {
-    setOrders(prev => prev.map(o => 
+    setOrders(prev => prev.map(o =>
       o.id === orderData.id ? { ...orderData } : o
     ));
     showSuccess(`Order "${orderData.id}" updated successfully!`);
@@ -165,10 +197,10 @@ const OrdersPage = () => {
   const renderPaginationButtons = () => {
     const buttons = [];
     const maxVisiblePages = 5;
-    
+
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
@@ -215,7 +247,7 @@ const OrdersPage = () => {
             <FiSearch className={styles.searchIcon} />
           </div>
 
-          <select 
+          <select
             className={styles.ordersFilterSelect}
             value={filterOrderStatus}
             onChange={(e) => handleFilterChange('orderStatus', e.target.value)}
@@ -228,20 +260,7 @@ const OrdersPage = () => {
             ))}
           </select>
 
-          <select 
-            className={styles.ordersFilterSelect}
-            value={filterPaymentStatus}
-            onChange={(e) => handleFilterChange('paymentStatus', e.target.value)}
-          >
-            <option value="">All Payment Status</option>
-            {paymentStatusOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-
-          <select 
+          <select
             className={styles.ordersSortSelect}
             value={`${sortField}-${sortOrder}`}
             onChange={(e) => {
@@ -292,7 +311,6 @@ const OrdersPage = () => {
                 )}
               </th>
               <th>Order Status</th>
-              <th>Payment Status</th>
               <th className={styles.sortableColumn} onClick={() => handleSortChange('totalAmount')}>
                 Total Amount
                 {sortField === 'totalAmount' ? (
@@ -328,19 +346,13 @@ const OrdersPage = () => {
                   </span>
                 </td>
                 <td className={styles.ordersTableCell}>
-                  <span className={classNames(styles.paymentStatusBadge, getPaymentStatusClass(order.paymentStatus))}>
-                    {getPaymentStatusLabel(order.paymentStatus)}
-                  </span>
-                </td>
-                <td className={styles.ordersTableCell}>
                   <span className={styles.totalAmount}>
                     {formatCurrency(order.totalAmount)}
                   </span>
                 </td>
                 <td className={styles.ordersTableCell}>
                   <div className={styles.shippingAddress}>
-                    <div>{order.shippingAddress.street}</div>
-                    <div>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</div>
+                    {order.shippingAddress || "N/A"}
                   </div>
                 </td>
                 <td className={styles.ordersTableCell}>
