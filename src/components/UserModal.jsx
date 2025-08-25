@@ -1,43 +1,68 @@
 import React, { useState, useEffect } from 'react';
-import { FiX, FiUser, FiMail, FiKey, FiShield, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiX, FiUser, FiMail, FiKey, FiShield, FiEye, FiEyeOff, FiBriefcase } from 'react-icons/fi';
 import classNames from 'classnames';
 import styles from './UserModal.module.css';
 import { roleOptions, statusOptions, checkPasswordStrength } from '../constants/userData';
 
 const UserModal = ({ isOpen, onClose, onSave, user, mode }) => {
   const [formData, setFormData] = useState({
-    name: '',
+    id: '',
+    employeeId: '',
+    userName: '',
     email: '',
-    role: 'staff',
-    status: 'active',
+    role: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    designation: '',
+    department: ''
   });
 
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({ score: 0, strength: 'none', feedback: [] });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Role options for dropdown
+  const availableRoles = [
+    { value: 'Admin', label: 'Admin' },
+    { value: 'Staff', label: 'Staff' },
+    { value: 'Manager', label: 'Manager' },
+    { value: 'Support', label: 'Support' },
+    { value: 'Sales', label: 'Sales' }
+  ];
 
   useEffect(() => {
     if (user && mode === 'edit') {
       setFormData({
-        ...user,
+        id: user.id,
+        employeeId: user.employeeId || '',
+        userName: user.userName || user.name || '',
+        email: user.email || '',
+        role: user.role || '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        designation: user.designation || '',
+        department: user.department || ''
       });
     } else {
       setFormData({
-        name: '',
+        id: '',
+        employeeId: '',
+        userName: '',
         email: '',
-        role: 'staff',
-        status: 'active',
+        role: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        designation: '',
+        department: ''
       });
     }
     setErrors({});
     setPasswordStrength({ score: 0, strength: 'none', feedback: [] });
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setIsSubmitting(false);
   }, [user, mode, isOpen]);
 
   const handleInputChange = (field, value) => {
@@ -45,7 +70,8 @@ const UserModal = ({ isOpen, onClose, onSave, user, mode }) => {
       ...prev,
       [field]: value
     }));
-    
+
+    // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
@@ -55,41 +81,111 @@ const UserModal = ({ isOpen, onClose, onSave, user, mode }) => {
 
     // Check password strength on password change
     if (field === 'password') {
-      const strength = checkPasswordStrength(value);
-      setPasswordStrength(strength);
+      if (value && checkPasswordStrength) {
+        const strength = checkPasswordStrength(value);
+        setPasswordStrength(strength);
+      } else {
+        setPasswordStrength({ score: 0, strength: 'none', feedback: [] });
+      }
+
+      // Clear confirm password error if passwords now match
+      if (formData.confirmPassword && value === formData.confirmPassword && errors.confirmPassword) {
+        setErrors(prev => ({
+          ...prev,
+          confirmPassword: ''
+        }));
+      }
+    }
+
+    // Check password match on confirm password change
+    if (field === 'confirmPassword') {
+      if (formData.password && value === formData.password && errors.confirmPassword) {
+        setErrors(prev => ({
+          ...prev,
+          confirmPassword: ''
+        }));
+      }
     }
   };
 
-  const handleStatusToggle = () => {
-    const newStatus = formData.status === 'active' ? 'inactive' : 'active';
-    handleInputChange('status', newStatus);
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateEmployeeId = (employeeId) => {
+    // Basic validation - can be customized based on your requirements
+    return employeeId && employeeId.trim().length >= 3;
+  };
+
+  const validatePassword = (password) => {
+    // Basic password validation
+    if (!password) return false;
+    if (password.length < 6) return false;
+
+    // Check for at least one letter and one number
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    return hasLetter && hasNumber;
   };
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+    // Employee ID validation
+    if (!formData.employeeId.trim()) {
+      newErrors.employeeId = 'Employee ID is required';
+    } else if (!validateEmployeeId(formData.employeeId)) {
+      newErrors.employeeId = 'Employee ID must be at least 3 characters';
     }
 
+    // Username validation
+    if (!formData.userName.trim()) {
+      newErrors.userName = 'Username is required';
+    } else if (formData.userName.trim().length < 2) {
+      newErrors.userName = 'Username must be at least 2 characters';
+    }
+
+    // Email validation
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (!validateEmail(formData.email.trim())) {
       newErrors.email = 'Please enter a valid email address';
     }
 
-    if (!formData.role) {
+    // Role validation
+    if (!formData.role.trim()) {
       newErrors.role = 'Role is required';
     }
 
-    if (mode === 'add' || formData.password) {
-      if (!formData.password) {
-        newErrors.password = 'Password is required';
-      } else if (passwordStrength.strength === 'weak' || passwordStrength.strength === 'none') {
-        newErrors.password = 'Password is too weak';
+    // Designation validation
+    if (!formData.designation.trim()) {
+      newErrors.designation = 'Designation is required';
+    }
+
+    // Department validation
+    if (!formData.department.trim()) {
+      newErrors.department = 'Department is required';
+    }
+
+    // Password validation for new users or when password is being changed
+    if (mode === 'add' || formData.password.trim()) {
+      if (!formData.password.trim()) {
+        if (mode === 'add') {
+          newErrors.password = 'Password is required';
+        }
+      } else {
+        if (!validatePassword(formData.password)) {
+          newErrors.password = 'Password must be at least 6 characters and contain letters and numbers';
+        }
       }
 
-      if (formData.password !== formData.confirmPassword) {
+      // Confirm password validation
+      if (formData.password.trim() && !formData.confirmPassword.trim()) {
+        newErrors.confirmPassword = 'Please confirm your password';
+      } else if (formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = 'Passwords do not match';
       }
     }
@@ -98,21 +194,54 @@ const UserModal = ({ isOpen, onClose, onSave, user, mode }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      const userData = { ...formData };
-      if (mode === 'edit' && !userData.password) {
-        delete userData.password;
-        delete userData.confirmPassword;
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Prepare user data exactly matching the API payload structure
+      const userData = {
+        employeeId: formData.employeeId.trim(),
+        userName: formData.userName.trim(),
+        email: formData.email.trim().toLowerCase(),
+        role: formData.role.trim(),
+        designation: formData.designation.trim(),
+        department: formData.department.trim()
+      };
+
+      // Add password only if provided (for both add and edit modes)
+      if (formData.password.trim()) {
+        userData.passwordHash = formData.password.trim();
       }
-      onSave(userData);
-      onClose();
+
+      // For edit mode, include the ID
+      if (mode === 'edit' && formData.id) {
+        userData.id = formData.id;
+      }
+
+      console.log('Submitting user data:', userData); // Debug log
+      await onSave(userData);
+    } catch (error) {
+      console.error('Error saving user:', error);
+      // Error handling is done in the parent component
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
+    if (e.target === e.currentTarget && !isSubmitting) {
+      onClose();
+    }
+  };
+
+  const handleClose = () => {
+    if (!isSubmitting) {
       onClose();
     }
   };
@@ -149,7 +278,11 @@ const UserModal = ({ isOpen, onClose, onSave, user, mode }) => {
             <FiUser className={styles.modalIcon} />
             {mode === 'add' ? 'Add New User' : 'Edit User'}
           </h2>
-          <button className={styles.closeButton} onClick={onClose}>
+          <button
+            className={styles.closeButton}
+            onClick={handleClose}
+            disabled={isSubmitting}
+          >
             <FiX />
           </button>
         </div>
@@ -157,23 +290,47 @@ const UserModal = ({ isOpen, onClose, onSave, user, mode }) => {
         <div className={styles.modalBody}>
           <form onSubmit={handleSubmit}>
             <div className={styles.formGrid}>
-              {/* Name Field */}
+              {/* Employee ID Field */}
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>
                   <FiUser className={styles.labelIcon} />
-                  Name *
+                  Employee ID *
                 </label>
                 <input
                   type="text"
                   className={classNames(styles.formInput, {
-                    [styles.error]: errors.name
+                    [styles.error]: errors.employeeId
                   })}
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="Enter full name"
+                  value={formData.employeeId}
+                  onChange={(e) => handleInputChange('employeeId', e.target.value)}
+                  placeholder="Enter employee ID (e.g., 121212)"
+                  disabled={isSubmitting || (mode === 'edit')} // Disable editing employee ID
+                  maxLength={20}
                 />
-                {errors.name && (
-                  <span className={styles.errorText}>{errors.name}</span>
+                {errors.employeeId && (
+                  <span className={styles.errorText}>{errors.employeeId}</span>
+                )}
+              </div>
+
+              {/* Username Field */}
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  <FiUser className={styles.labelIcon} />
+                  Username *
+                </label>
+                <input
+                  type="text"
+                  className={classNames(styles.formInput, {
+                    [styles.error]: errors.userName
+                  })}
+                  value={formData.userName}
+                  onChange={(e) => handleInputChange('userName', e.target.value)}
+                  placeholder="Enter full name (e.g., John Doe)"
+                  disabled={isSubmitting}
+                  maxLength={100}
+                />
+                {errors.userName && (
+                  <span className={styles.errorText}>{errors.userName}</span>
                 )}
               </div>
 
@@ -181,7 +338,7 @@ const UserModal = ({ isOpen, onClose, onSave, user, mode }) => {
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>
                   <FiMail className={styles.labelIcon} />
-                  Email *
+                  Email Address *
                 </label>
                 <input
                   type="email"
@@ -190,7 +347,9 @@ const UserModal = ({ isOpen, onClose, onSave, user, mode }) => {
                   })}
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  placeholder="Enter email address"
+                  placeholder="Enter email (e.g., user@example.com)"
+                  disabled={isSubmitting}
+                  maxLength={255}
                 />
                 {errors.email && (
                   <span className={styles.errorText}>{errors.email}</span>
@@ -204,15 +363,17 @@ const UserModal = ({ isOpen, onClose, onSave, user, mode }) => {
                   Role *
                 </label>
                 <select
-                  className={classNames(styles.formSelect, {
+                  className={classNames(styles.formInput, {
                     [styles.error]: errors.role
                   })}
                   value={formData.role}
                   onChange={(e) => handleInputChange('role', e.target.value)}
+                  disabled={isSubmitting}
                 >
-                  {roleOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
+                  <option value="">Select a role</option>
+                  {availableRoles.map(role => (
+                    <option key={role.value} value={role.value}>
+                      {role.label}
                     </option>
                   ))}
                 </select>
@@ -221,27 +382,48 @@ const UserModal = ({ isOpen, onClose, onSave, user, mode }) => {
                 )}
               </div>
 
-              {/* Status Field */}
+              {/* Designation Field */}
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>
-                  Status
+                  <FiBriefcase className={styles.labelIcon} />
+                  Designation *
                 </label>
-                <div className={styles.statusToggle}>
-                  <button
-                    type="button"
-                    className={classNames(styles.toggleButton, {
-                      [styles.active]: formData.status === 'active'
-                    })}
-                    onClick={handleStatusToggle}
-                  >
-                    <div className={styles.toggleSlider}>
-                      <div className={styles.toggleHandle}></div>
-                    </div>
-                    <span className={styles.toggleLabel}>
-                      {formData.status === 'active' ? 'Active' : 'Inactive'}
-                    </span>
-                  </button>
-                </div>
+                <input
+                  type="text"
+                  className={classNames(styles.formInput, {
+                    [styles.error]: errors.designation
+                  })}
+                  value={formData.designation}
+                  onChange={(e) => handleInputChange('designation', e.target.value)}
+                  placeholder="Enter designation (e.g., Software Developer)"
+                  disabled={isSubmitting}
+                  maxLength={100}
+                />
+                {errors.designation && (
+                  <span className={styles.errorText}>{errors.designation}</span>
+                )}
+              </div>
+
+              {/* Department Field */}
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  
+                  Department *
+                </label>
+                <input
+                  type="text"
+                  className={classNames(styles.formInput, {
+                    [styles.error]: errors.department
+                  })}
+                  value={formData.department}
+                  onChange={(e) => handleInputChange('department', e.target.value)}
+                  placeholder="Enter department (e.g., IT)"
+                  disabled={isSubmitting}
+                  maxLength={100}
+                />
+                {errors.department && (
+                  <span className={styles.errorText}>{errors.department}</span>
+                )}
               </div>
 
               {/* Password Field */}
@@ -259,35 +441,39 @@ const UserModal = ({ isOpen, onClose, onSave, user, mode }) => {
                     })}
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
-                    placeholder="Enter password"
+                    placeholder={mode === 'add' ? 'Enter password (min 6 characters)' : 'Enter new password (optional)'}
+                    disabled={isSubmitting}
+                    minLength={6}
+                    maxLength={100}
                   />
                   <button
                     type="button"
                     className={styles.passwordToggle}
                     onClick={() => setShowPassword(!showPassword)}
+                    disabled={isSubmitting}
                   >
                     {showPassword ? <FiEyeOff /> : <FiEye />}
                   </button>
                 </div>
-                {formData.password && (
+                {formData.password && passwordStrength && (
                   <div className={styles.passwordStrength}>
                     <div className={styles.strengthBar}>
-                      <div 
+                      <div
                         className={styles.strengthProgress}
-                        style={{ 
-                          width: `${(passwordStrength.score / 5) * 100}%`,
+                        style={{
+                          width: `${Math.min((passwordStrength.score / 4) * 100, 100)}%`,
                           backgroundColor: getPasswordStrengthColor(passwordStrength.strength)
                         }}
                       ></div>
                     </div>
                     <div className={styles.strengthInfo}>
-                      <span 
+                      <span
                         className={styles.strengthText}
                         style={{ color: getPasswordStrengthColor(passwordStrength.strength) }}
                       >
                         {getPasswordStrengthText(passwordStrength.strength)}
                       </span>
-                      {passwordStrength.feedback.length > 0 && (
+                      {passwordStrength.feedback && passwordStrength.feedback.length > 0 && (
                         <ul className={styles.strengthFeedback}>
                           {passwordStrength.feedback.map((feedback, index) => (
                             <li key={index}>{feedback}</li>
@@ -318,11 +504,14 @@ const UserModal = ({ isOpen, onClose, onSave, user, mode }) => {
                       value={formData.confirmPassword}
                       onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                       placeholder="Confirm password"
+                      disabled={isSubmitting}
+                      maxLength={100}
                     />
                     <button
                       type="button"
                       className={styles.passwordToggle}
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      disabled={isSubmitting}
                     >
                       {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
                     </button>
@@ -339,15 +528,24 @@ const UserModal = ({ isOpen, onClose, onSave, user, mode }) => {
               <button
                 type="button"
                 className={classNames(styles.modalButton, styles.cancelButton)}
-                onClick={onClose}
+                onClick={handleClose}
+                disabled={isSubmitting}
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 className={classNames(styles.modalButton, styles.saveButton)}
+                disabled={isSubmitting}
               >
-                {mode === 'add' ? 'Create User' : 'Update User'}
+                {isSubmitting ? (
+                  <>
+                    <div className={styles.spinner}></div>
+                    {mode === 'add' ? 'Creating...' : 'Updating...'}
+                  </>
+                ) : (
+                  mode === 'add' ? 'Create User' : 'Update User'
+                )}
               </button>
             </div>
           </form>

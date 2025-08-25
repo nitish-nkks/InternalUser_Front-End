@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiKey, FiChevronUp, FiChevronDown, FiUsers } from 'react-icons/fi';
 import classNames from 'classnames';
 import styles from './UsersPage.module.css';
@@ -6,7 +6,12 @@ import UserModal from '../components/UserModal';
 import { ToastContainer } from '../components/Toast';
 import useToast from '../hooks/useToast';
 import { 
-  userData, 
+  getAllInternalUsers,
+  createInternalUser,
+  updateInternalUser,
+  deleteInternalUser
+} from '../api/api';
+import { 
   roleOptions, 
   statusOptions,
   getRoleLabel, 
@@ -17,11 +22,12 @@ import {
 } from '../constants/userData';
 
 const UsersPage = () => {
-  const [users, setUsers] = useState(userData);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
-  const [sortField, setSortField] = useState('createdDate');
+  const [sortField, setSortField] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState('desc');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('add');
@@ -31,11 +37,53 @@ const UsersPage = () => {
 
   const { toasts, showSuccess, showError, removeToast } = useToast();
 
+  // Load users on component mount
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await getAllInternalUsers();
+      
+      // Handle both direct array and nested response structures
+      const userData = response?.data || response;
+      
+      if (!Array.isArray(userData)) {
+        throw new Error('Invalid response format');
+      }
+      
+      // Transform API response to match frontend structure
+      const transformedUsers = userData.map(user => ({
+        id: user.id || user.employeeId, // Use employeeId as fallback ID if id not present
+        employeeId: user.employeeId,
+        name: user.userName,
+        email: user.email,
+        role: user.role?.toLowerCase() || 'staff',
+        designation: user.designation || '',
+        department: user.department || '',
+        status: user.isActive ? 'active' : 'inactive', // Transform boolean to status string
+        createdDate: user.createdAt,
+        lastLogin: user.lastLoginAt,
+        avatar: user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.userName)}&background=1890ff&color=fff`
+      }));
+      
+      setUsers(transformedUsers);
+    } catch (error) {
+      console.error('Error loading users:', error);
+      showError('Failed to load users. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Filter and sort users
   const filteredUsers = useMemo(() => {
     let filtered = users.filter(user => {
       const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase());
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.employeeId.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesRole = !filterRole || user.role === filterRole;
       const matchesStatus = !filterStatus || user.status === filterStatus;
@@ -49,11 +97,11 @@ const UsersPage = () => {
       let bValue = b[sortField];
       
       if (sortField === 'createdDate' || sortField === 'lastLogin') {
-        aValue = new Date(aValue);
-        bValue = new Date(bValue);
+        aValue = new Date(aValue || 0);
+        bValue = new Date(bValue || 0);
       } else {
-        aValue = String(aValue).toLowerCase();
-        bValue = String(bValue).toLowerCase();
+        aValue = String(aValue || '').toLowerCase();
+        bValue = String(bValue || '').toLowerCase();
       }
       
       if (sortOrder === 'asc') {
@@ -110,37 +158,71 @@ const UsersPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteUser = (userId) => {
+  const handleDeleteUser = async (userId) => {
     const user = users.find(u => u.id === userId);
     if (window.confirm(`Are you sure you want to delete user "${user?.name}"? This action cannot be undone.`)) {
-      setUsers(prev => prev.filter(u => u.id !== userId));
-      showSuccess(`User "${user?.name}" deleted successfully!`);
+      try {
+        await deleteInternalUser(userId);
+        await loadUsers(); // Refresh the list
+        showSuccess(`User "${user?.name}" deleted successfully!`);
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        showError('Failed to delete user. Please try again.');
+      }
     }
   };
 
   const handleResetPassword = (userId) => {
     const user = users.find(u => u.id === userId);
     if (window.confirm(`Are you sure you want to reset password for "${user?.name}"? A new password will be sent to their email.`)) {
+      // TODO: Implement password reset API call if available
       showSuccess(`Password reset email sent to ${user?.email}`);
     }
   };
 
-  const handleSaveUser = (userData) => {
-    if (modalMode === 'add') {
-      const newUser = {
-        ...userData,
-        id: Math.max(...users.map(u => u.id)) + 1,
-        createdDate: new Date().toISOString(),
-        lastLogin: null,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}&background=1890ff&color=fff`
-      };
-      setUsers(prev => [newUser, ...prev]);
-      showSuccess(`User "${newUser.name}" created successfully!`);
-    } else if (modalMode === 'edit') {
-      setUsers(prev => prev.map(u => 
-        u.id === userData.id ? { ...userData, createdDate: u.createdDate, lastLogin: u.lastLogin } : u
-      ));
-      showSuccess(`User "${userData.name}" updated successfully!`);
+  const handleSaveUser = async (userData) => {
+    try {
+      if (modalMode === 'add') {
+        // Transform frontend data to API format
+        const apiUserData = {
+          employeeId: userData.employeeId,
+          userName: userData.userName,
+          email: userData.email,
+          role: userData.role,
+          passwordHash: userData.passwordHash,
+          designation: userData.designation,
+          department: userData.department
+        };
+        
+        await createInternalUser(apiUserData);
+        showSuccess(`User "${userData.userName}" created successfully!`);
+      } else if (modalMode === 'edit') {
+        // Transform frontend data to API format for update
+        const apiUserData = {
+          id: userData.id,
+          employeeId: userData.employeeId,
+          userName: userData.userName,
+          email: userData.email,
+          role: userData.role,
+          designation: userData.designation,
+          department: userData.department
+        };
+        
+        // Only include passwordHash if it was provided
+        if (userData.passwordHash) {
+          apiUserData.passwordHash = userData.passwordHash;
+        }
+        
+        await updateInternalUser(userData.id, apiUserData);
+        showSuccess(`User "${userData.userName}" updated successfully!`);
+      }
+      
+      await loadUsers(); // Refresh the list
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error saving user:', error);
+      const errorMessage = error?.message || 'Failed to save user. Please try again.';
+      showError(errorMessage);
     }
   };
 
@@ -189,6 +271,17 @@ const UsersPage = () => {
     return buttons;
   };
 
+  if (loading) {
+    return (
+      <div className={styles.usersPageContainer}>
+        <div className={styles.loadingContainer}>
+          <div className={styles.loadingSpinner}></div>
+          <p>Loading users...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.usersPageContainer}>
       {/* Page Header */}
@@ -196,7 +289,7 @@ const UsersPage = () => {
         <div className={styles.usersHeaderLeft}>
           <h1 className={styles.usersPageTitle}>User Management</h1>
           <p className={styles.usersPageSubtitle}>
-            Manage system users, roles, and permissions
+            Manage system users, roles, and permissions ({filteredUsers.length} total)
           </p>
         </div>
       </div>
@@ -207,7 +300,7 @@ const UsersPage = () => {
           <div className={styles.usersSearchBar}>
             <input
               type="text"
-              placeholder="Search by name or email..."
+              placeholder="Search by name, email, or employee ID..."
               value={searchTerm}
               onChange={handleSearchChange}
             />
@@ -277,8 +370,16 @@ const UsersPage = () => {
         <table className={styles.usersTable}>
           <thead className={styles.usersTableHeader}>
             <tr>
+              <th className={styles.sortableColumn} onClick={() => handleSortChange('employeeId')}>
+                Employee ID
+                {sortField === 'employeeId' ? (
+                  sortOrder === 'asc' ? <FiChevronUp className={styles.sortIcon} /> : <FiChevronDown className={styles.sortIcon} />
+                ) : (
+                  <FiChevronUp className={styles.sortIcon} style={{ opacity: 0.3 }} />
+                )}
+              </th>
               <th className={styles.sortableColumn} onClick={() => handleSortChange('name')}>
-                Name
+                Username
                 {sortField === 'name' ? (
                   sortOrder === 'asc' ? <FiChevronUp className={styles.sortIcon} /> : <FiChevronDown className={styles.sortIcon} />
                 ) : (
@@ -301,7 +402,30 @@ const UsersPage = () => {
                   <FiChevronUp className={styles.sortIcon} style={{ opacity: 0.3 }} />
                 )}
               </th>
-              <th>Status</th>
+              <th className={styles.sortableColumn} onClick={() => handleSortChange('designation')}>
+                Designation
+                {sortField === 'designation' ? (
+                  sortOrder === 'asc' ? <FiChevronUp className={styles.sortIcon} /> : <FiChevronDown className={styles.sortIcon} />
+                ) : (
+                  <FiChevronUp className={styles.sortIcon} style={{ opacity: 0.3 }} />
+                )}
+              </th>
+              <th className={styles.sortableColumn} onClick={() => handleSortChange('department')}>
+                Department
+                {sortField === 'department' ? (
+                  sortOrder === 'asc' ? <FiChevronUp className={styles.sortIcon} /> : <FiChevronDown className={styles.sortIcon} />
+                ) : (
+                  <FiChevronUp className={styles.sortIcon} style={{ opacity: 0.3 }} />
+                )}
+              </th>
+              <th className={styles.sortableColumn} onClick={() => handleSortChange('status')}>
+                Status
+                {sortField === 'status' ? (
+                  sortOrder === 'asc' ? <FiChevronUp className={styles.sortIcon} /> : <FiChevronDown className={styles.sortIcon} />
+                ) : (
+                  <FiChevronUp className={styles.sortIcon} style={{ opacity: 0.3 }} />
+                )}
+              </th>
               <th className={styles.sortableColumn} onClick={() => handleSortChange('createdDate')}>
                 Created Date
                 {sortField === 'createdDate' ? (
@@ -316,6 +440,9 @@ const UsersPage = () => {
           <tbody>
             {paginatedUsers.map((user) => (
               <tr key={user.id} className={styles.usersTableRow}>
+                <td className={styles.usersTableCell}>
+                  <span className={styles.employeeId}>{user.employeeId}</span>
+                </td>
                 <td className={styles.usersTableCell}>
                   <div className={styles.userInfo}>
                     <img
@@ -345,6 +472,12 @@ const UsersPage = () => {
                   </span>
                 </td>
                 <td className={styles.usersTableCell}>
+                  <span className={styles.designation}>{user.designation || '-'}</span>
+                </td>
+                <td className={styles.usersTableCell}>
+                  <span className={styles.department}>{user.department || '-'}</span>
+                </td>
+                <td className={styles.usersTableCell}>
                   <span className={classNames(styles.statusBadge, getStatusClass(user.status))}>
                     {getStatusLabel(user.status)}
                   </span>
@@ -370,7 +503,7 @@ const UsersPage = () => {
                     >
                       <FiKey />
                     </button>
-                    {user.role !== 'admin' && (
+                    {user.role?.toLowerCase() !== 'admin' && (
                       <button
                         className={classNames(styles.usersActionButton, styles.usersDeleteButton)}
                         onClick={() => handleDeleteUser(user.id)}
@@ -387,31 +520,33 @@ const UsersPage = () => {
         </table>
 
         {/* Pagination */}
-        <div className={styles.pagination}>
-          <div className={styles.paginationInfo}>
-            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredUsers.length)} of {filteredUsers.length} users
+        {totalPages > 1 && (
+          <div className={styles.pagination}>
+            <div className={styles.paginationInfo}>
+              Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredUsers.length)} of {filteredUsers.length} users
+            </div>
+
+            <div className={styles.paginationControls}>
+              <button
+                className={styles.paginationButton}
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+
+              {renderPaginationButtons()}
+
+              <button
+                className={styles.paginationButton}
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
           </div>
-
-          <div className={styles.paginationControls}>
-            <button
-              className={styles.paginationButton}
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </button>
-
-            {renderPaginationButtons()}
-
-            <button
-              className={styles.paginationButton}
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </button>
-          </div>
-        </div>
+        )}
 
         {/* No Results */}
         {filteredUsers.length === 0 && (
@@ -421,9 +556,12 @@ const UsersPage = () => {
             </div>
             <div className={styles.noResultsTitle}>No users found</div>
             <div className={styles.noResultsSubtitle}>
-              {searchTerm ? 'Try adjusting your search terms or filters' : 'Get started by adding your first user'}
+              {searchTerm || filterRole || filterStatus ? 
+                'Try adjusting your search terms or filters' : 
+                'Get started by adding your first user'
+              }
             </div>
-            {!searchTerm && (
+            {!searchTerm && !filterRole && !filterStatus && (
               <button
                 className={styles.noResultsButton}
                 onClick={handleAddUser}

@@ -1,7 +1,4 @@
 import axiosInstance from "./axiosInstance";
-import axios from "axios";
-
-const BASE_URL = "http://localhost:5207/api";
 
 export const loginUser = (email, password, guestId = null) => {
   return axiosInstance.post("/auth/login", {
@@ -149,6 +146,46 @@ export const deleteCategory = async (id) => {
     return response.data;
   } catch (error) {
     console.error('Error deleting category:', error);
+    throw error.response?.data || error;
+  }
+};
+
+export const getAllInternalUsers = async () => {
+  try {
+    const response = await axiosInstance.get("/InternalUser");
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching internal users:', error);
+    throw error.response?.data || error;
+  }
+};
+
+export const createInternalUser = async (userData) => {
+  try {
+    const response = await axiosInstance.post("/InternalUser/create", userData);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating internal user:', error);
+    throw error.response?.data || error;
+  }
+};
+
+export const updateInternalUser = async (id, userData) => {
+  try {
+    const response = await axiosInstance.put(`/InternalUser/${id}`, userData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating internal user:', error);
+    throw error.response?.data || error;
+  }
+};
+
+export const deleteInternalUser = async (id) => {
+  try {
+    const response = await axiosInstance.delete(`/InternalUser/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting internal user:', error);
     throw error.response?.data || error;
   }
 };
