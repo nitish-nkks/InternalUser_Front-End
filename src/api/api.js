@@ -64,16 +64,6 @@ export const addCategory = async (data) => {
   }
 };
 
-export const createFlashSale = async (flashSaleData) => {
-  try {
-    const response = await axiosInstance.post("/FlashSale", flashSaleData);
-    return response.data;
-  } catch (error) {
-    console.error("Error creating flash sale:", error);
-    throw error.response?.data || error;
-  }
-};
-
 export const getAllProducts = async () => {
   try {
     const response = await axiosInstance.get("/Products/all");
@@ -216,6 +206,48 @@ export const deleteOrder = async (id) => {
     return response.data;
   } catch (error) {
     console.error('Error deleting order:', error);
+    throw error.response?.data || error;
+  }
+};
+
+// Flash sale
+export const createFlashSale = async (flashSaleData) => {
+  try {
+    const response = await axiosInstance.post("/FlashSale", flashSaleData);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating flash sale:", error);
+    throw error.response?.data || error;
+  }
+};
+
+export const getFlashSales = async () => {
+  try {
+    const response = await axiosInstance.get("/FlashSale/all");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching flash sales:", error);
+    throw error.response?.data || error;
+  }
+};
+
+export const updateFlashSale = async (saleData) => {
+  try {
+    const response = await axiosInstance.put(`/FlashSale/${saleData.id}`, saleData);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating flash sale:", error);
+    throw error.response?.data || error;
+  }
+};
+
+
+export const deleteFlashSale = async (id) => {
+  try {
+    const response = await axiosInstance.delete(`/FlashSale/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting flash sale:", error);
     throw error.response?.data || error;
   }
 };
