@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FiX, FiSave } from 'react-icons/fi';
 import classNames from 'classnames';
 import styles from './CategoryModal.module.css';
-import { getCategoryTree, addCategory } from '../api/api';
+import { getCategoryTree, addCategory, updateCategory } from '../api/api';
 import axios from 'axios';
 
 const CategoryModal = ({ isOpen, onClose, onSave, category = null, categories = [], mode = 'add' }) => {
@@ -175,12 +175,20 @@ const CategoryModal = ({ isOpen, onClose, onSave, category = null, categories = 
     }
 
     try {
-      await addCategory(formDataObj);
-      alert("Category added successfully!");
+      if (mode === 'edit' && category?.id) {
+        await updateCategory(category.id, formDataObj);
+        alert("Category updated successfully!");
+      } else {
+        await addCategory(formDataObj);
+        alert("Category added successfully!");
+      }
       onClose();
+      if (onSave) {
+        onSave();
+      }
     } catch (error) {
       console.error("Error saving category:", error);
-      alert("Failed to save category.");
+      alert(mode === 'edit' ? "Failed to update category." : "Failed to save category.");
     }
   };
 
