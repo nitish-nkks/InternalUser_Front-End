@@ -1,15 +1,26 @@
-// Order Status Options
 export const orderStatusOptions = [
-  { value: 'pending', label: 'Pending' },
-  { value: 'confirmed', label: 'Confirmed' },
-  { value: 'processing', label: 'Processing' },
-  { value: 'shipped', label: 'Shipped' },
-  { value: 'delivered', label: 'Delivered' },
-  { value: 'cancelled', label: 'Cancelled' },
-  { value: 'returned', label: 'Returned' }
+  { value: 'Order_Placed', label: 'Order Placed' },
+  { value: 'Processing', label: 'Processing' },
+  { value: 'Shipped', label: 'Shipped' },
+  { value: 'Delivered', label: 'Delivered' },
+  { value: 'Cancelled', label: 'Cancelled' },
+  { value: 'Return_Requested', label: 'Return Requested' },
+  { value: 'Returned', label: 'Returned' }
 ];
 
-// Payment Status Options
+export const getOrderStatusLabel = (status) => {
+  const statusLabels = {
+    'Order_Placed': 'Order Placed',
+    'Processing': 'Processing',
+    'Shipped': 'Shipped',
+    'Delivered': 'Delivered',
+    'Cancelled': 'Cancelled',
+    'Return_Requested': 'Return Requested',
+    'Returned': 'Returned'
+  };
+  return statusLabels[status] || status;
+};
+
 export const paymentStatusOptions = [
   { value: 'pending', label: 'Pending' },
   { value: 'paid', label: 'Paid' },
@@ -17,6 +28,50 @@ export const paymentStatusOptions = [
   { value: 'refunded', label: 'Refunded' },
   { value: 'partial', label: 'Partial' }
 ];
+
+export const getPaymentStatusLabel = (status) => {
+  const statusLabels = {
+    pending: 'Pending',
+    paid: 'Paid',
+    failed: 'Failed',
+    refunded: 'Refunded',
+    partial: 'Partial'
+  };
+  return statusLabels[status] || status;
+};
+
+export const formatDate = (date) => {
+  if (!date) return 'N/A';
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+export const formatCurrency = (amount) => {
+  if (amount == null || isNaN(amount)) return '$0.00';
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  }).format(amount);
+};
+
+export const getOrderStatusColor = (status) => {
+  const colors = {
+    'Order_Placed': '#3b82f6',
+    'Processing': '#f59e0b',
+    'Shipped': '#8b5cf6',
+    'Delivered': '#10b981',
+    'Cancelled': '#ef4444',
+    'Return_Requested': '#f97316',
+    'Returned': '#6b7280'
+  };
+  return colors[status] || '#6b7280';
+};
+
 
 // Sample Order Data
 export const orderData = [
@@ -201,47 +256,6 @@ export const orderData = [
   }
 ];
 
-// Utility Functions
-export const getOrderStatusLabel = (status) => {
-  const statusOption = orderStatusOptions.find(option => option.value === status);
-  return statusOption ? statusOption.label : status;
-};
-
-export const getPaymentStatusLabel = (status) => {
-  const statusOption = paymentStatusOptions.find(option => option.value === status);
-  return statusOption ? statusOption.label : status;
-};
-
-export const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-};
-
-export const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR'
-  }).format(amount);
-};
-
-export const getOrderStatusColor = (status) => {
-  const colors = {
-    pending: '#faad14',
-    confirmed: '#52c41a',
-    processing: '#1890ff',
-    shipped: '#722ed1',
-    delivered: '#52c41a',
-    cancelled: '#ff4d4f',
-    returned: '#fa8c16'
-  };
-  return colors[status] || '#666';
-};
 
 export const getPaymentStatusColor = (status) => {
   const colors = {

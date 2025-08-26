@@ -199,3 +199,23 @@ export const getAllOrders = async () => {
     throw error.response?.data || error;
   }
 };
+
+export const updateOrderStatus = async (id, status) => {
+  try {
+    const response = await axiosInstance.put(`/Order/${id}/status`, { status });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    throw error.response?.data || error;
+  }
+};
+
+export const deleteOrder = async (id) => {
+  try {
+    const response = await axiosInstance.delete(`/Order/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting order:', error);
+    throw error.response?.data || error;
+  }
+};

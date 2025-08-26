@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { FiSearch, FiEye, FiEdit2, FiX, FiChevronUp, FiChevronDown } from 'react-icons/fi';
+import { FiSearch, FiEye, FiEdit2, FiChevronUp, FiChevronDown, FiTrash2 } from 'react-icons/fi';
 import classNames from 'classnames';
 import styles from './OrdersPage.module.css';
 import OrderModal from '../components/OrderModal';
@@ -13,7 +13,11 @@ import {
   formatCurrency,
   getOrderStatusColor,
 } from '../constants/orderData';
-import { getAllOrders } from '../api/api';
+import { 
+  getAllOrders, 
+  updateOrderStatus, 
+  deleteOrder 
+} from '../api/api';
 
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
@@ -26,6 +30,7 @@ const OrdersPage = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [loading, setLoading] = useState(false);
 
   const { toasts, showSuccess, showError, removeToast } = useToast();
 
@@ -38,35 +43,64 @@ const OrdersPage = () => {
       case 4: return 'Cancelled';
       case 5: return 'Return_Requested';
       case 6: return 'Returned';
-      default: return 'Pending';
+      default: return 'Order_Placed';
     }
   };
 
+  const mapStatusToNumber = (status) => {
+    switch (status) {
+      case 'Order_Placed': return 0;
+      case 'Processing': return 1;
+      case 'Shipped': return 2;
+      case 'Delivered': return 3;
+      case 'Cancelled': return 4;
+      case 'Return_Requested': return 5;
+      case 'Returned': return 6;
+      default: return 0;
+    }
+  };
+
+  const mapOrderData = (order) => ({
+    id: order.id.toString(),
+    customerName: `${order.user?.firstName || ''} ${order.user?.lastName || ''}`.trim(),
+    customerEmail: order.user?.email || 'N/A',
+    customerPhone: order.user?.phoneNumber || 'N/A',
+    orderDate: order.createdAt,
+    orderStatus: mapOrderStatus(order.status),
+    paymentStatus: order.paymentStatus || 'pending',
+    totalAmount: order.totalAmount,
+    shippingAddress: order.shippingAddress || 'N/A', // Handle as string
+    items: order.orderItems?.map(item => ({
+      id: item.id,
+      productName: item.product?.name || 'Unknown Product',
+      category: item.product?.category?.name || 'N/A',
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      totalPrice: item.totalPrice || (item.quantity * item.unitPrice)
+    })) || [],
+    shippingCost: order.shippingCost || 0,
+    taxAmount: order.taxAmount || 0,
+    discountAmount: order.discountAmount || 0,
+    notes: order.notes || ''
+  });
+
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const response = await getAllOrders();
-
-        const mappedOrders = response.data.map(order => ({
-          id: order.id.toString(),
-          customerName: `${order.user.firstName} ${order.user.lastName}`,
-          customerEmail: order.user.email,
-          orderDate: order.createdAt,
-          orderStatus: mapOrderStatus(order.status),
-          totalAmount: order.totalAmount,
-          shippingAddress: order.shippingAddress || "N/A",
-        }));
-
-        setOrders(mappedOrders);
-      } catch (error) {
-        showError("Failed to fetch orders");
-        console.error("Error fetching orders:", error);
-      }
-    };
-
     fetchOrders();
   }, []);
 
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const response = await getAllOrders();
+      const mappedOrders = response.data.map(mapOrderData);
+      setOrders(mappedOrders);
+    } catch (error) {
+      showError("Failed to fetch orders");
+      console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter and sort orders
   const filteredOrders = useMemo(() => {
@@ -136,45 +170,70 @@ const OrdersPage = () => {
   };
 
   const handleViewOrder = (order) => {
+    // Just show the order details in view mode (no API call needed)
     setSelectedOrder(order);
     setModalMode('view');
     setIsModalOpen(true);
   };
 
   const handleUpdateStatus = (order) => {
+    // Show the order in edit mode to update status
     setSelectedOrder(order);
     setModalMode('edit');
     setIsModalOpen(true);
   };
 
-  const handleCancelOrder = (orderId) => {
+
+
+  const handleDeleteOrder = async (orderId) => {
     const order = orders.find(o => o.id === orderId);
-    if (window.confirm(`Are you sure you want to cancel order "${order?.id}"? This action cannot be undone.`)) {
-      setOrders(prev => prev.map(o =>
-        o.id === orderId
-          ? { ...o, orderStatus: 'cancelled', paymentStatus: 'refunded', totalAmount: 0 }
-          : o
-      ));
-      showSuccess(`Order "${order?.id}" cancelled successfully!`);
+    if (window.confirm(`Are you sure you want to delete order "${order?.id}"? This action cannot be undone.`)) {
+      setLoading(true);
+      try {
+        await deleteOrder(orderId);
+        
+        // Update local state
+        setOrders(prev => prev.filter(o => o.id !== orderId));
+        
+        showSuccess(`Order "${order?.id}" deleted successfully!`);
+      } catch (error) {
+        showError("Failed to delete order");
+        console.error("Error deleting order:", error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  const handleSaveOrder = (orderData) => {
-    setOrders(prev => prev.map(o =>
-      o.id === orderData.id ? { ...orderData } : o
-    ));
-    showSuccess(`Order "${orderData.id}" updated successfully!`);
+  const handleSaveOrder = async (orderData) => {
+    setLoading(true);
+    try {
+      // Update only the order status via API - send as string statusDto
+      await updateOrderStatus(orderData.id, orderData.orderStatus);
+      
+      // Update local state
+      setOrders(prev => prev.map(o =>
+        o.id === orderData.id ? { ...o, orderStatus: orderData.orderStatus } : o
+      ));
+      
+      showSuccess(`Order "${orderData.id}" status updated successfully!`);
+    } catch (error) {
+      showError("Failed to update order status");
+      console.error("Error updating order status:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getOrderStatusClass = (status) => {
     const statusClasses = {
-      pending: styles.statusPending,
-      confirmed: styles.statusConfirmed,
-      processing: styles.statusProcessing,
-      shipped: styles.statusShipped,
-      delivered: styles.statusDelivered,
-      cancelled: styles.statusCancelled,
-      returned: styles.statusReturned
+      'Order_Placed': styles.statusPending,
+      'Processing': styles.statusProcessing,
+      'Shipped': styles.statusShipped,
+      'Delivered': styles.statusDelivered,
+      'Cancelled': styles.statusCancelled,
+      'Return_Requested': styles.statusReturned,
+      'Returned': styles.statusReturned
     };
     return statusClasses[status] || styles.statusDefault;
   };
@@ -224,6 +283,13 @@ const OrdersPage = () => {
 
   return (
     <div className={styles.ordersPageContainer}>
+      {/* Loading Overlay */}
+      {loading && (
+        <div className={styles.loadingOverlay}>
+          <div className={styles.loadingSpinner}>Loading...</div>
+        </div>
+      )}
+
       {/* Page Header */}
       <div className={styles.ordersPageHeader}>
         <div className={styles.ordersHeaderLeft}>
@@ -232,6 +298,13 @@ const OrdersPage = () => {
             Track and manage customer orders, payments, and shipments
           </p>
         </div>
+        <button 
+          className={styles.refreshButton}
+          onClick={fetchOrders}
+          disabled={loading}
+        >
+          Refresh Orders
+        </button>
       </div>
 
       {/* Top Bar Controls */}
@@ -361,6 +434,7 @@ const OrdersPage = () => {
                       className={classNames(styles.ordersActionButton, styles.ordersViewButton)}
                       onClick={() => handleViewOrder(order)}
                       title="View order details"
+                      disabled={loading}
                     >
                       <FiEye />
                     </button>
@@ -368,18 +442,18 @@ const OrdersPage = () => {
                       className={classNames(styles.ordersActionButton, styles.ordersEditButton)}
                       onClick={() => handleUpdateStatus(order)}
                       title="Update order status"
+                      disabled={loading}
                     >
                       <FiEdit2 />
                     </button>
-                    {order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && (
-                      <button
-                        className={classNames(styles.ordersActionButton, styles.ordersCancelButton)}
-                        onClick={() => handleCancelOrder(order.id)}
-                        title="Cancel order"
-                      >
-                        <FiX />
-                      </button>
-                    )}
+                    <button
+                      className={classNames(styles.ordersActionButton, styles.ordersDeleteButton)}
+                      onClick={() => handleDeleteOrder(order.id)}
+                      title="Delete order"
+                      disabled={loading}
+                    >
+                      <FiTrash2 />
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -415,7 +489,7 @@ const OrdersPage = () => {
         </div>
 
         {/* No Results */}
-        {filteredOrders.length === 0 && (
+        {filteredOrders.length === 0 && !loading && (
           <div className={styles.noResults}>
             <div className={styles.noResultsIcon}>📦</div>
             <div className={styles.noResultsTitle}>No orders found</div>
