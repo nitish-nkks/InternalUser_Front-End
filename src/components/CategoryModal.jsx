@@ -5,7 +5,7 @@ import styles from './CategoryModal.module.css';
 import { getCategoryTree, addCategory, updateCategory } from '../api/api';
 import axios from 'axios';
 
-const CategoryModal = ({ isOpen, onClose, onSave, category = null, categories = [], mode = 'add' }) => {
+const CategoryModal = ({ isOpen, onClose, onSave, category = {}, categories = [], mode = 'add' }) => {
   const [formData, setFormData] = useState({
     name: '',
     parentCategoryId: '',
@@ -130,10 +130,14 @@ const CategoryModal = ({ isOpen, onClose, onSave, category = null, categories = 
       newErrors.name = 'Category name is required';
     }
 
-    if (formData.parentCategoryId && mode === 'edit') {
-      const isCircular = checkCircularDependency(formData.parentCategoryId, category.id);
+    if (formData.parentCategoryId && mode === 'edit' && category && category.id !== undefined) {
+      const isCircular = checkCircularDependency(
+        formData.parentCategoryId,
+        category.id
+      );
       if (isCircular) {
-        newErrors.parentCategoryId = 'Cannot select this category as it would create a circular dependency';
+        newErrors.parentCategoryId =
+          'Cannot select this category as it would create a circular dependency';
       }
     }
 
@@ -147,10 +151,10 @@ const CategoryModal = ({ isOpen, onClose, onSave, category = null, categories = 
   };
 
   const checkCircularDependency = (parentCategoryId, categoryId) => {
-    if (!parentCategoryId) return false;
-    if (parentCategoryId === categoryId) return true;
-
-    const parent = categories.find(c => c.id === parseInt(parentCategoryId));
+    if (!parentCategoryId || categoryId === undefined) return false;
+    if (parseInt(parentCategoryId) === parseInt(categoryId)) return true;
+    if (!Array.isArray(categories) || categories.length === 0) return false;
+    const parent = categories.find(c => c && c.id === parseInt(parentCategoryId));
     if (!parent) return false;
 
     return checkCircularDependency(parent.parentCategoryId, categoryId);

@@ -1012,33 +1012,16 @@ const ProductsPage = () => {
   };
 
   const handleEditProduct = (product) => {
-    console.log('Edit button clicked for product:', product); // Debug log
-    console.log('Product ID:', product?.id); // Debug log
-
-    if (!product) {
-      console.error('No product provided to edit');
-      showError('Product data is missing');
+    if (!product || !product.id) {
+      showError('Invalid product');
       return;
     }
-
-    if (!product.id) {
-      console.error('Product ID is missing');
-      showError('Product ID is missing');
-      return;
-    }
-
-    try {
-      setSelectedProduct({ ...product }); // Create a copy to avoid mutations
-      setOriginalProductData({ ...product }); // Store original data for comparison
-      setModalMode('edit');
-      console.log('Setting modal open to true'); // Debug log
-      setIsModalOpen(true);
-      console.log('Modal should now be open'); // Debug log
-    } catch (error) {
-      console.error('Error setting up edit modal:', error);
-      showError('Error opening edit modal');
-    }
+    setSelectedProduct(product);
+    setOriginalProductData(product);
+    setModalMode('edit');
+    setIsModalOpen(true);
   };
+
 
   const handleDeleteProduct = async (productId) => {
     const product = products.find(p => p.id === productId);
@@ -1407,31 +1390,18 @@ const ProductsPage = () => {
       {console.log('Rendering modals - modalMode:', modalMode, 'isModalOpen:', isModalOpen, 'selectedProduct:', selectedProduct)}
 
       {isModalOpen && (
-        modalMode === 'edit' ? (
-          <UpdateModal
-            isOpen={isModalOpen}
-            onClose={() => {
-              console.log('Closing edit modal');
-              setIsModalOpen(false);
-              setSelectedProduct(null);
-              setOriginalProductData(null);
-            }}
-            onSave={handleSaveProduct}
-            product={selectedProduct}
-          />
-        ) : (
-          <ProductModal
-            isOpen={isModalOpen}
-            onClose={() => {
-              console.log('Closing product modal');
-              setIsModalOpen(false);
-              setSelectedProduct(null);
-            }}
-            onSave={handleSaveProduct}
-            product={selectedProduct}
-            mode={modalMode}
-          />
-        )
+        <ProductModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            console.log('Closing modal');
+            setIsModalOpen(false);
+            setSelectedProduct(null);
+            setOriginalProductData(null);
+          }}
+          onSave={handleSaveProduct}
+          product={selectedProduct}
+          mode={modalMode}
+        />
       )}
 
 

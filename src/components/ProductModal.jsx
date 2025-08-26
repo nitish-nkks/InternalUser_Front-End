@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FiX, FiUpload, FiTrash2, FiSave } from 'react-icons/fi';
 import classNames from 'classnames';
 import styles from './ProductModal.module.css';
-import { addProduct, getCategoryTree, uploadProductImage } from '../api/api';
+import { addProduct, getCategoryTree, uploadProductImage, updateProduct } from '../api/api';
 import axiosInstance from '../api/axiosInstance';
 
 const renderCategoryOptions = (categories, prefix = "") => {
@@ -248,65 +248,113 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
 
     setIsLoading(true);
     setErrors({});
+
     try {
-      // 1) Create product
-      const productResp = await addProduct(productData);
-      console.log('productResp (full):', productResp);
+      if (mode === 'edit' && product?.id) {
+        // Edit mode - update existing product
+        console.log('Updating product with ID:', product.id);
+        console.log('Product data:', productData);
 
-      const productId = extractProductId(productResp);
-      console.log('extracted productId:', productId);
+        // Update the product first
+        const updatedProduct = await updateProduct(product.id, productData);
+        console.log('Product updated successfully:', updatedProduct);
 
-      if (!productId) {
-        throw new Error("Product saved but no productId was returned. Check API response.");
-      }
-
-      // 2) Upload images (if any)
-      console.log("imageFiles before upload:", imageFiles);
-      if (imageFiles && imageFiles.length > 0) {
-        // attempt via helper first
-        for (let i = 0; i < imageFiles.length; i++) {
-          const file = imageFiles[i];
-          try {
-            console.log("Uploading file via helper:", file.name, "primary:", i === 0);
-            const uploadResp = await uploadProductImage(productId, file, i === 0);
-            console.log("uploadResp (helper):", uploadResp);
-            // if uploadResp indicates failure, throw to fallback
-            if (!uploadResp || (uploadResp && uploadResp.Succeeded === false)) {
-              throw new Error("Upload failed (helper) for " + file.name);
-            }
-          } catch (helperErr) {
-            // fallback to direct axios (more logging)
-            console.warn("uploadProductImage helper failed, falling back to direct axios for file:", file.name, helperErr);
-            const token = localStorage.getItem("authToken");
-            const form = new FormData();
-            form.append("ProductId", productId);
-            form.append("Image", file); // MUST match DTO property name on server
-            form.append("IsPrimary", i === 0);
-
+        // Handle image uploads for edit mode if there are new images
+        if (imageFiles && imageFiles.length > 0) {
+          console.log("Uploading new images for existing product:", imageFiles);
+          for (let i = 0; i < imageFiles.length; i++) {
+            const file = imageFiles[i];
             try {
-              const directResp = await axiosInstance.post("/ProductImages/upload", form, {
-                headers: {
-                  "Content-Type": "multipart/form-data",
-                  ...(token ? { Authorization: `Bearer ${token}` } : {})
-                }
-              });
-              console.log("uploadResp (direct axios):", directResp.data);
-              if (!directResp.data || (directResp.data && directResp.data.Succeeded === false)) {
-                throw new Error("Direct upload response indicates failure for " + file.name);
-              }
-            } catch (directErr) {
-              console.error("Direct upload failed for", file.name, directErr.response?.status, directErr.response?.data || directErr.message);
-              throw directErr; // stop further uploads and report to user
+              console.log("Uploading file:", file.name, "primary:", i === 0);
+              const uploadResp = await uploadProductImage(product.id, file, i === 0);
+              console.log("uploadResp:", uploadResp);
+            } catch (uploadErr) {
+              console.warn("Upload failed for file:", file.name, uploadErr);
+              // Continue with other uploads even if one fails
             }
           }
         }
-      }
 
-      // success
-      alert("✅ Product added successfully!");
-      window.location.href = "/products";
+        alert("✅ Product updated successfully!");
+
+        // Call onSave callback to refresh parent component
+        if (onSave) {
+          onSave({ ...updatedProduct, id: product.id });
+        }
+
+        onClose();
+      } else {
+        // Add mode - create new product
+        console.log('Creating new product:', productData);
+
+        // 1) Create product
+        const productResp = await addProduct(productData);
+        console.log('productResp (full):', productResp);
+
+        const productId = extractProductId(productResp);
+        console.log('extracted productId:', productId);
+
+        if (!productId) {
+          throw new Error("Product saved but no productId was returned. Check API response.");
+        }
+
+        // 2) Upload images (if any)
+        console.log("imageFiles before upload:", imageFiles);
+        if (imageFiles && imageFiles.length > 0) {
+          for (let i = 0; i < imageFiles.length; i++) {
+            const file = imageFiles[i];
+            try {
+              console.log("Uploading file via helper:", file.name, "primary:", i === 0);
+              const uploadResp = await uploadProductImage(productId, file, i === 0);
+              console.log("uploadResp (helper):", uploadResp);
+
+              if (!uploadResp || (uploadResp && uploadResp.Succeeded === false)) {
+                throw new Error("Upload failed (helper) for " + file.name);
+              }
+            } catch (helperErr) {
+              // fallback to direct axios (more logging)
+              console.warn("uploadProductImage helper failed, falling back to direct axios for file:", file.name, helperErr);
+              const token = localStorage.getItem("authToken");
+              const form = new FormData();
+              form.append("ProductId", productId);
+              form.append("Image", file);
+              form.append("IsPrimary", i === 0);
+
+              try {
+                const directResp = await axiosInstance.post("/ProductImages/upload", form, {
+                  headers: {
+                    "Content-Type": "multipart/form-data",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                  }
+                });
+                console.log("uploadResp (direct axios):", directResp.data);
+                if (!directResp.data || (directResp.data && directResp.data.Succeeded === false)) {
+                  throw new Error("Direct upload response indicates failure for " + file.name);
+                }
+              } catch (directErr) {
+                console.error("Direct upload failed for", file.name, directErr.response?.status, directErr.response?.data || directErr.message);
+                throw directErr;
+              }
+            }
+          }
+        }
+
+        alert("✅ Product added successfully!");
+
+        // Call onSave callback to refresh parent component
+        if (onSave) {
+          onSave(productResp);
+        }
+
+        // For add mode, redirect or close
+        if (window.location.pathname.includes('/products')) {
+          window.location.reload();
+        } else {
+          onClose();
+        }
+      }
     } catch (err) {
-      console.error("Error saving product (or images):", err);
+      console.error("Error saving product:", err);
       const message = err?.response?.data?.message || err?.message || JSON.stringify(err);
       setErrors({ api: message });
     } finally {
