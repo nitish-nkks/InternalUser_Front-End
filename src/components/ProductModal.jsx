@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiX, FiUpload, FiTrash2, FiSave } from 'react-icons/fi';
+import { FiX, FiUpload, FiTrash2, FiSave, FiDownload } from 'react-icons/fi';
 import classNames from 'classnames';
 import styles from './ProductModal.module.css';
 import { addProduct, getCategoryTree, uploadProductImage, updateProduct } from '../api/api';
@@ -43,7 +43,7 @@ const renderCategoryOptions = (categories, prefix = "") => {
   ));
 };
 
-const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' }) => {
+const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add', onDownloadSample, onUploadExcel, isUploading }) => {
   const [formData, setFormData] = useState({
     // Basic Product Fields
     name: '',
@@ -80,9 +80,10 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef(null);
   const modalRef = useRef(null);
+  const bulkUploadFileInputRef = useRef(null);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && mode !== 'bulkUpload') {
       const fetchCategories = async () => {
         try {
           const res = await getCategoryTree();
@@ -93,10 +94,10 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
       };
       fetchCategories();
     }
-  }, [isOpen]);
+  }, [isOpen, mode]);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && mode !== 'bulkUpload') {
       if (product && (mode === 'edit' || mode === 'view')) {
         const existingImages = product.productImages
           ? product.productImages.map(img => img.imageUrl)
@@ -315,6 +316,10 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
       onClose();
       return;
     }
+    if (mode === 'bulkUpload') {
+      bulkUploadFileInputRef.current?.click();
+      return;
+    }
 
     if (!validateForm()) {
       return;
@@ -417,6 +422,117 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
   };
 
   if (!isOpen) return null;
+
+  if (mode === 'bulkUpload') {
+    return (
+      <div className={classNames(styles.modalOverlay, styles.open)}>
+        <div className={styles.modal} ref={modalRef} style={{ maxWidth: '600px' }}>
+          <div className={styles.modalHeader}>
+            <h2 className={styles.modalTitle}>Upload Products</h2>
+            <button className={styles.closeButton} onClick={onClose} aria-label="Close modal">
+              <FiX />
+            </button>
+          </div>
+          <div className={styles.modalBody}>
+            <div className={styles.uploadContainer}>
+              <div className={classNames(styles.uploadArea, { [styles.loading]: isUploading })}>
+                <div className={styles.chooseFile} onClick={() => bulkUploadFileInputRef.current?.click()}>
+                  <input
+                    type="file"
+                    ref={bulkUploadFileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={onUploadExcel}
+                    disabled={isUploading}
+                    accept=".xlsx, .xls"
+                  />
+                  <FiUpload className={styles.uploadIcon} />
+                  <span className={styles.chooseFileText}>{isUploading ? 'Uploading...' : 'Choose File'}</span>
+                </div>
+              </div>
+            </div>
+            <button
+              className={styles.downloadSampleButton}
+              onClick={onDownloadSample}
+              disabled={isUploading}
+            >
+              <FiDownload /> Download Sample
+            </button>
+            <div className={styles.instructions}>
+              <h4>Instructions:</h4>
+              <ul className={styles.instructionsList}>
+                <li>
+                  <strong>Product Name*</strong>: Product name. Cannot be empty or duplicate.
+                </li>
+                <li>
+                  <strong>ProductCode*</strong>: Unique product code (e.g., PRD001).
+                </li>
+                <li>
+                  <strong>Description*</strong>: Short description of the product.
+                </li>
+                <li>
+                  <strong>Price*</strong>: Numeric, must be greater than 0.
+                </li>
+                <li>
+                  <strong>StockQuantity*</strong>: Integer, must be ≥ 0.
+                </li>
+                <li>
+                  <strong>CategoryName*</strong>: Must match an existing active category in the database.
+                </li>
+                <li>
+                  <strong>MinOrderQuantity*</strong>: Integer, must be {'>'} 0.
+                </li>
+                <li>
+                  <strong>Image*</strong>: Main thumbnail image filename.
+                </li>
+                <li>
+                  <strong>ProductType*</strong>: Must be one of: <em>Simple, Pack, Combo</em>.
+                </li>
+                <li>
+                  <strong>UOM*</strong>: Must be one of: <em>KG, MT, EA, BAG, Box, Carton, Tin, SET, TO, Litre</em>.
+                </li>
+                <li>
+                  <strong>Weight*</strong>: Decimal, must be {'>'}  0.
+                </li>
+                <li>
+                  <strong>PackSize*</strong>: Integer, must be {'>'} 0.
+                </li>
+                <li>
+                  <strong>FormType*</strong>: Must be one of: <em>Pellet, Powder, Liquid, Tablets</em>.
+                </li>
+                <li>
+                  <strong>ShelfLifeMonths*</strong>: Integer, must be {'>'} 0.
+                </li>
+                <li>
+                  <strong>DosageApplication*</strong>: Usage instructions (max 300 chars).
+                </li>
+                <li>
+                  <strong>HSN/SAC Code*</strong>: Tax classification code (max 100 chars).
+                </li>
+                <li>
+                  <strong>TaxRate*</strong>: Decimal, must be between 0 and 100.
+                </li>
+                <li>
+                  <strong>DiscountPercentage</strong>: Decimal, less than 100.
+                </li>
+                <li>
+                  <strong>IsFeatured / IsNewProduct / IsBestSeller</strong>: Must be <em>True</em> or <em>False</em>.
+                </li>
+                <li>
+                  <strong>ProductImages</strong>: Comma-separated additional image filenames (e.g., img1.jpg,img2.jpg).
+                </li>
+                <li>
+                  <strong>StorageInstructions</strong>: Optional, up to 300 characters.
+                </li>
+                <li>
+                  <strong>Certifications</strong>: e.g., <em>ISO 9001, FSSAI</em>.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={classNames(styles.modalOverlay, { [styles.open]: isOpen })}>
