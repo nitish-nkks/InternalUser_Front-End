@@ -5,6 +5,32 @@ import styles from './ProductModal.module.css';
 import { addProduct, getCategoryTree, uploadProductImage, updateProduct } from '../api/api';
 import axiosInstance from '../api/axiosInstance';
 
+const PRODUCT_TYPE_OPTIONS = [
+  { value: 0, label: 'Simple' },
+  { value: 1, label: 'Pack' },
+  { value: 2, label: 'Combo' }
+];
+
+const FORM_TYPE_OPTIONS = [
+  { value: 0, label: 'Pellet' },
+  { value: 1, label: 'Powder' },
+  { value: 2, label: 'Liquid' },
+  { value: 3, label: 'Tablets' }
+];
+
+const UOM_OPTIONS = [
+  { value: 0, label: 'KG' },
+  { value: 1, label: 'MT' },
+  { value: 2, label: 'EA' },
+  { value: 3, label: 'BAG' },
+  { value: 4, label: 'Box' },
+  { value: 5, label: 'Carton' },
+  { value: 6, label: 'Tin' },
+  { value: 7, label: 'SET' },
+  { value: 8, label: 'TO' },
+  { value: 9, label: 'Litre' }
+];
+
 const renderCategoryOptions = (categories, prefix = "") => {
   return categories.map(cat => (
     <React.Fragment key={cat.id}>
@@ -19,17 +45,32 @@ const renderCategoryOptions = (categories, prefix = "") => {
 
 const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' }) => {
   const [formData, setFormData] = useState({
+    // Basic Product Fields
     name: '',
+    productCode: '',
     description: '',
     price: '',
     discountPercentage: '',
     stockQuantity: '',
     minOrderQuantity: '',
     categoryId: null,
+    image: '',
     productImages: [],
     isFeatured: false,
     isNewProduct: false,
     isBestSeller: false,
+    // Product Specification Fields
+    productType: 0,
+    uom: 0,
+    weight: '',
+    packSize: '',
+    formType: 0,
+    shelfLifeMonths: '',
+    dosageApplication: '',
+    storageInstructions: '',
+    certifications: '',
+    hsnSacCode: '',
+    taxRate: '',
   });
   const [categoryTree, setCategoryTree] = useState([]);
   const [errors, setErrors] = useState({});
@@ -57,34 +98,66 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
   useEffect(() => {
     if (isOpen) {
       if (product && (mode === 'edit' || mode === 'view')) {
-        const existingImages = product.images ? product.images.split(',') : [];
+        const existingImages = product.productImages
+          ? product.productImages.map(img => img.imageUrl)
+          : [];
         setFormData({
+          // Basic fields
           name: product.name || '',
+          productCode: product.productCode || '',
           description: product.description || '',
           price: product.price || '',
           discountPercentage: product.discountPercentage || '',
           stockQuantity: product.stockQuantity || '',
           minOrderQuantity: product.minOrderQuantity || '',
           categoryId: product.categoryId || '',
+          image: product.image || '',
           productImages: existingImages,
           isFeatured: product.isFeatured ?? false,
           isNewProduct: product.isNewProduct ?? false,
           isBestSeller: product.isBestSeller ?? false,
+          // Product Specification fields (from nested specification object)
+          productType: product.productSpecification?.productType ?? 0,
+          uom: product.productSpecification?.uom ?? 0,
+          weight: product.productSpecification?.weight || '',
+          packSize: product.productSpecification?.packSize || '',
+          formType: product.productSpecification?.formType ?? 0,
+          shelfLifeMonths: product.productSpecification?.shelfLifeMonths || '',
+          dosageApplication: product.productSpecification?.dosageApplication || '',
+          storageInstructions: product.productSpecification?.storageInstructions || '',
+          certifications: product.productSpecification?.certifications || '',
+          hsnSacCode: product.productSpecification?.hsnSacCode || '',
+          taxRate: product.productSpecification?.taxRate || '',
+          isActive: product.productSpecification?.isActive ?? true
         });
         setImagePreviews(existingImages);
       } else if (mode === 'add') {
         setFormData({
           name: '',
+          productCode: '',
           description: '',
           price: '',
           discountPercentage: '',
           stockQuantity: '',
           minOrderQuantity: '',
           categoryId: null,
+          image: '',
           productImages: [],
           isFeatured: false,
           isNewProduct: false,
           isBestSeller: false,
+          productType: 0,
+          uom: 0,
+          weight: '',
+          packSize: '',
+          formType: 0,
+          shelfLifeMonths: '',
+          dosageApplication: '',
+          storageInstructions: '',
+          certifications: '',
+          hsnSacCode: '',
+          taxRate: '',
+          isActive: true
         });
         setImagePreviews([]);
         setImageFiles([]);
@@ -129,6 +202,16 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
         return;
       }
     }
+    if (name === 'dosageApplication' && inputValue.length > 300) {
+      return;
+    }
+    if ((name === 'storageInstructions' || name === 'certifications') && inputValue.length > 300) {
+      return;
+    }
+    if (name === 'hsnSacCode' && inputValue.length > 100) {
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: inputValue
@@ -144,7 +227,6 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
 
   const handleImageUpload = (files) => {
     const newImageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
-    console.log("handleImageUpload -> newImageFiles:", newImageFiles);
     const combinedFiles = [...imageFiles, ...newImageFiles];
     if (combinedFiles.length > 5) {
       setErrors({ api: "Maximum 5 images allowed." });
@@ -187,7 +269,9 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
 
   const validateForm = () => {
     const newErrors = {};
+    // Basic validations
     if (!formData.name.trim()) newErrors.name = 'Product name is required';
+    if (!formData.productCode.trim()) newErrors.productCode = 'Product code is required';
     if (!formData.price || formData.price <= 0) newErrors.price = 'Price must be greater than 0';
     if (formData.discountPercentage && formData.discountPercentage >= 100) newErrors.discountPercentage = 'Discount percentage must be less than 100';
     if (!formData.stockQuantity || formData.stockQuantity < 0) newErrors.stockQuantity = 'Stock must be 0 or greater';
@@ -195,21 +279,24 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
     if (getWordCount(formData.description) > 500) newErrors.description = 'Description cannot exceed 500 words';
     if (!formData.categoryId) newErrors.categoryId = 'Category is required';
 
+    // Product Specification validations
+    if (!formData.weight || formData.weight <= 0) newErrors.weight = 'Weight must be greater than 0';
+    if (!formData.packSize || formData.packSize <= 0) newErrors.packSize = 'Pack size must be greater than 0';
+    if (!formData.shelfLifeMonths || formData.shelfLifeMonths <= 0) newErrors.shelfLifeMonths = 'Shelf life must be greater than 0';
+    if (!formData.dosageApplication.trim()) newErrors.dosageApplication = 'Dosage/Application is required';
+    if (!formData.hsnSacCode.trim()) newErrors.hsnSacCode = 'HSN/SAC Code is required';
+    if (!formData.taxRate || formData.taxRate < 0 || formData.taxRate > 100) newErrors.taxRate = 'Tax rate must be between 0 and 100';
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // helper to extract productId robustly from backend response
   const extractProductId = (productResp) => {
-    // productResp might already be response.data (per addProduct implementation),
-    // so try a few common shapes
     const candidates = [
       productResp?.data?.Id,
       productResp?.data?.id,
       productResp?.Id,
       productResp?.id,
-      productResp?.data?.id, // extra fallback
-      productResp?.data?.Id
     ];
     for (const c of candidates) {
       if (typeof c === 'number' && c > 0) return c;
@@ -234,16 +321,34 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
     }
 
     const productData = {
+      // Basic fields
       name: formData.name,
+      productCode: formData.productCode,
       description: formData.description,
       price: parseFloat(formData.price),
       discountPercentage: parseFloat(formData.discountPercentage) || 0,
       stockQuantity: parseInt(formData.stockQuantity),
       minOrderQuantity: parseInt(formData.minOrderQuantity),
       categoryId: formData.categoryId ? parseInt(formData.categoryId) : null,
+      image: formData.image ? formData.image.name || formData.image : '',
+      productImages: formData.productImages || [],
       isFeatured: formData.isFeatured,
       isNewProduct: formData.isNewProduct,
       isBestSeller: formData.isBestSeller,
+      // Product Specification fields (nested object)
+      specification: {
+        productType: parseInt(formData.productType),
+        uom: parseInt(formData.uom),
+        weight: parseFloat(formData.weight),
+        packSize: parseInt(formData.packSize),
+        formType: parseInt(formData.formType),
+        shelfLifeMonths: parseInt(formData.shelfLifeMonths),
+        dosageApplication: formData.dosageApplication,
+        storageInstructions: formData.storageInstructions || null,
+        certifications: formData.certifications || null,
+        hsnSacCode: formData.hsnSacCode,
+        taxRate: parseFloat(formData.taxRate)
+      }
     };
 
     setIsLoading(true);
@@ -251,102 +356,51 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
 
     try {
       if (mode === 'edit' && product?.id) {
-        // Edit mode - update existing product
-        console.log('Updating product with ID:', product.id);
-        console.log('Product data:', productData);
-
-        // Update the product first
+        // Edit mode
         const updatedProduct = await updateProduct(product.id, productData);
         console.log('Product updated successfully:', updatedProduct);
 
-        // Handle image uploads for edit mode if there are new images
         if (imageFiles && imageFiles.length > 0) {
-          console.log("Uploading new images for existing product:", imageFiles);
           for (let i = 0; i < imageFiles.length; i++) {
             const file = imageFiles[i];
             try {
-              console.log("Uploading file:", file.name, "primary:", i === 0);
-              const uploadResp = await uploadProductImage(product.id, file, i === 0);
-              console.log("uploadResp:", uploadResp);
+              await uploadProductImage(product.id, file, i === 0);
             } catch (uploadErr) {
               console.warn("Upload failed for file:", file.name, uploadErr);
-              // Continue with other uploads even if one fails
             }
           }
         }
 
         alert("✅ Product updated successfully!");
-
-        // Call onSave callback to refresh parent component
         if (onSave) {
           onSave({ ...updatedProduct, id: product.id });
         }
-
         onClose();
       } else {
-        // Add mode - create new product
-        console.log('Creating new product:', productData);
-
-        // 1) Create product
+        // Add mode
         const productResp = await addProduct(productData);
-        console.log('productResp (full):', productResp);
-
         const productId = extractProductId(productResp);
-        console.log('extracted productId:', productId);
 
         if (!productId) {
-          throw new Error("Product saved but no productId was returned. Check API response.");
+          throw new Error("Product saved but no productId was returned.");
         }
 
-        // 2) Upload images (if any)
-        console.log("imageFiles before upload:", imageFiles);
         if (imageFiles && imageFiles.length > 0) {
           for (let i = 0; i < imageFiles.length; i++) {
             const file = imageFiles[i];
             try {
-              console.log("Uploading file via helper:", file.name, "primary:", i === 0);
-              const uploadResp = await uploadProductImage(productId, file, i === 0);
-              console.log("uploadResp (helper):", uploadResp);
-
-              if (!uploadResp || (uploadResp && uploadResp.Succeeded === false)) {
-                throw new Error("Upload failed (helper) for " + file.name);
-              }
-            } catch (helperErr) {
-              // fallback to direct axios (more logging)
-              console.warn("uploadProductImage helper failed, falling back to direct axios for file:", file.name, helperErr);
-              const token = localStorage.getItem("authToken");
-              const form = new FormData();
-              form.append("ProductId", productId);
-              form.append("Image", file);
-              form.append("IsPrimary", i === 0);
-
-              try {
-                const directResp = await axiosInstance.post("/ProductImages/upload", form, {
-                  headers: {
-                    "Content-Type": "multipart/form-data",
-                    ...(token ? { Authorization: `Bearer ${token}` } : {})
-                  }
-                });
-                console.log("uploadResp (direct axios):", directResp.data);
-                if (!directResp.data || (directResp.data && directResp.data.Succeeded === false)) {
-                  throw new Error("Direct upload response indicates failure for " + file.name);
-                }
-              } catch (directErr) {
-                console.error("Direct upload failed for", file.name, directErr.response?.status, directErr.response?.data || directErr.message);
-                throw directErr;
-              }
+              await uploadProductImage(productId, file, i === 0);
+            } catch (uploadErr) {
+              console.warn("Upload failed for file:", file.name, uploadErr);
             }
           }
         }
 
         alert("✅ Product added successfully!");
-
-        // Call onSave callback to refresh parent component
         if (onSave) {
           onSave(productResp);
         }
 
-        // For add mode, redirect or close
         if (window.location.pathname.includes('/products')) {
           window.location.reload();
         } else {
@@ -377,6 +431,9 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
         </div>
         <div className={styles.modalBody}>
           <form className={styles.form} onSubmit={handleSubmit}>
+            {/* Basic Product Information Section */}
+            <h3 className={styles.sectionTitle}>Basic Information</h3>
+
             <div className={styles.formGroup}>
               <label className={styles.label}>Product Name *</label>
               <input
@@ -390,6 +447,21 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
                 required
               />
               {errors.name && <span className={styles.errorMessage}>{errors.name}</span>}
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Product Code *</label>
+              <input
+                type="text"
+                name="productCode"
+                value={formData.productCode}
+                onChange={handleInputChange}
+                className={classNames(styles.input, { [styles.error]: errors.productCode })}
+                placeholder="Enter product code (e.g., PRD001)"
+                disabled={mode === 'view' || isLoading}
+                required
+              />
+              {errors.productCode && <span className={styles.errorMessage}>{errors.productCode}</span>}
             </div>
 
             <div className={styles.formGroup}>
@@ -477,6 +549,7 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
                 {errors.minOrderQuantity && <span className={styles.errorMessage}>{errors.minOrderQuantity}</span>}
               </div>
             </div>
+
             <div className={styles.formGroup}>
               <label className={styles.label}>Category *</label>
               <select
@@ -492,7 +565,239 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
               </select>
               {errors.categoryId && <span className={styles.errorMessage}>{errors.categoryId}</span>}
             </div>
-            {/* Added new boolean fields */}
+
+            {/* Thumbnail Image Section */}
+            <h3 className={styles.sectionTitle}>Thumbnail Image *</h3>
+            <div className={styles.formGroup}>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    setFormData(prev => ({ ...prev, image: file }));
+                  }
+                }}
+                disabled={mode === 'view' || isLoading}
+                required={mode !== 'view'}
+              />
+              {formData.image && (
+                <div className={styles.imagePreviewGrid}>
+                  <div className={styles.imagePreview}>
+                    <img
+                      src={typeof formData.image === 'string'
+                        ? formData.image.startsWith('/uploads')
+                          ? formData.image
+                          : `/uploads/products/${formData.image}`
+                        : URL.createObjectURL(formData.image)}
+                      alt="Thumbnail"
+                      className={styles.previewImage}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Product Specification Section */}
+            <h3 className={styles.sectionTitle}>Product Specifications</h3>
+
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Product Type *</label>
+                <select
+                  name="productType"
+                  value={formData.productType}
+                  onChange={handleInputChange}
+                  className={styles.select}
+                  disabled={mode === 'view' || isLoading}
+                  required
+                >
+                  {PRODUCT_TYPE_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Unit of Measurement *</label>
+                <select
+                  name="uom"
+                  value={formData.uom}
+                  onChange={handleInputChange}
+                  className={styles.select}
+                  disabled={mode === 'view' || isLoading}
+                  required
+                >
+                  {UOM_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Weight *</label>
+                <input
+                  type="number"
+                  name="weight"
+                  value={formData.weight}
+                  onChange={handleInputChange}
+                  className={classNames(styles.input, { [styles.error]: errors.weight })}
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                  disabled={mode === 'view' || isLoading}
+                  required
+                />
+                {errors.weight && <span className={styles.errorMessage}>{errors.weight}</span>}
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Pack Size *</label>
+                <input
+                  type="number"
+                  name="packSize"
+                  value={formData.packSize}
+                  onChange={handleInputChange}
+                  className={classNames(styles.input, { [styles.error]: errors.packSize })}
+                  placeholder="0"
+                  min="1"
+                  disabled={mode === 'view' || isLoading}
+                  required
+                />
+                {errors.packSize && <span className={styles.errorMessage}>{errors.packSize}</span>}
+              </div>
+            </div>
+
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Form Type *</label>
+                <select
+                  name="formType"
+                  value={formData.formType}
+                  onChange={handleInputChange}
+                  className={styles.select}
+                  disabled={mode === 'view' || isLoading}
+                  required
+                >
+                  {FORM_TYPE_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Shelf Life (Months) *</label>
+                <input
+                  type="number"
+                  name="shelfLifeMonths"
+                  value={formData.shelfLifeMonths}
+                  onChange={handleInputChange}
+                  className={classNames(styles.input, { [styles.error]: errors.shelfLifeMonths })}
+                  placeholder="0"
+                  min="1"
+                  disabled={mode === 'view' || isLoading}
+                  required
+                />
+                {errors.shelfLifeMonths && <span className={styles.errorMessage}>{errors.shelfLifeMonths}</span>}
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Dosage/Application *</label>
+              <textarea
+                name="dosageApplication"
+                value={formData.dosageApplication}
+                onChange={handleInputChange}
+                className={classNames(styles.textarea, { [styles.error]: errors.dosageApplication })}
+                placeholder="Enter dosage and application instructions..."
+                rows={3}
+                maxLength={300}
+                disabled={mode === 'view' || isLoading}
+                required
+              />
+              <div className={styles.characterCount}>
+                {formData.dosageApplication.length} / 300 characters
+              </div>
+              {errors.dosageApplication && <span className={styles.errorMessage}>{errors.dosageApplication}</span>}
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Storage Instructions</label>
+              <textarea
+                name="storageInstructions"
+                value={formData.storageInstructions}
+                onChange={handleInputChange}
+                className={styles.textarea}
+                placeholder="Enter storage instructions..."
+                rows={2}
+                maxLength={300}
+                disabled={mode === 'view' || isLoading}
+              />
+              <div className={styles.characterCount}>
+                {formData.storageInstructions.length} / 300 characters
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Certifications</label>
+              <input
+                type="text"
+                name="certifications"
+                value={formData.certifications}
+                onChange={handleInputChange}
+                className={styles.input}
+                placeholder="e.g., ISO 9001, FSSAI"
+                maxLength={300}
+                disabled={mode === 'view' || isLoading}
+              />
+            </div>
+
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>HSN/SAC Code *</label>
+                <input
+                  type="text"
+                  name="hsnSacCode"
+                  value={formData.hsnSacCode}
+                  onChange={handleInputChange}
+                  className={classNames(styles.input, { [styles.error]: errors.hsnSacCode })}
+                  placeholder="Enter HSN/SAC code"
+                  maxLength={100}
+                  disabled={mode === 'view' || isLoading}
+                  required
+                />
+                {errors.hsnSacCode && <span className={styles.errorMessage}>{errors.hsnSacCode}</span>}
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Tax Rate (%) *</label>
+                <input
+                  type="number"
+                  name="taxRate"
+                  value={formData.taxRate}
+                  onChange={handleInputChange}
+                  className={classNames(styles.input, { [styles.error]: errors.taxRate })}
+                  placeholder="0.00"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  disabled={mode === 'view' || isLoading}
+                  required
+                />
+                {errors.taxRate && <span className={styles.errorMessage}>{errors.taxRate}</span>}
+              </div>
+            </div>
+
+            {/* Product Flags Section */}
+            <h3 className={styles.sectionTitle}>Product Flags</h3>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
                 <label className={styles.checkboxLabel}>
@@ -532,9 +837,9 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add' })
               </div>
             </div>
 
+            {/* Image Upload Section */}
+            <h3 className={styles.sectionTitle}>Product Images</h3>
             <div className={styles.imageUpload}>
-              <label className={styles.label}>Product Images (Multiple)</label>
-
               {mode !== 'view' && (
                 <div
                   className={classNames(styles.imageUploadArea, {
