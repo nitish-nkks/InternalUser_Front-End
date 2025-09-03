@@ -419,8 +419,8 @@ const OrdersPage = () => {
                   </span>
                 </td>
                 <td className={styles.ordersTableCell}>
-                  <span className={styles.totalAmount}>
-                    {formatCurrency(order.totalAmount)}
+                  <span className={styles.totalAmount}>                          
+                     {order.totalAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}
                   </span>
                 </td>
                 <td className={styles.ordersTableCell}>

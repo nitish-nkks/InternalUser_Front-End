@@ -1,4 +1,4 @@
-// import React, { useState, useEffect } from 'react';
+﻿// import React, { useState, useEffect } from 'react';
 // import { FiX, FiPackage, FiUser, FiMapPin, FiCreditCard } from 'react-icons/fi';
 // import classNames from 'classnames';
 // import styles from './OrderModal.module.css';
@@ -588,7 +588,8 @@ const OrderModal = ({ isOpen, onClose, onSave, order, mode }) => {
                 </div>
                 <div className={styles.infoItem}>
                   <label className={styles.infoLabel}>Total Amount</label>
-                  <span className={styles.infoValue}>{formatCurrency(formData.totalAmount)}</span>
+                                  <span className={styles.infoValue}> {(formData.totalAmount).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}</span>
+                             
                 </div>
               </div>
             </div>
