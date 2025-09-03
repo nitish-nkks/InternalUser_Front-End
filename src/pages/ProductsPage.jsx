@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { FiSearch, FiFilter, FiPlus, FiEdit2, FiTrash2, FiEye, FiMoreVertical, FiChevronUp, FiChevronDown } from 'react-icons/fi';
+import { FiSearch, FiFilter, FiPlus, FiEdit2, FiTrash2, FiEye, FiMoreVertical, FiChevronUp, FiChevronDown, FiDownload, FiUpload } from 'react-icons/fi';
 import classNames from 'classnames';
 import styles from './ProductsPage.module.css';
 import productModalStyles from '../components/ProductModal.module.css';
@@ -9,7 +9,7 @@ import { ToastContainer } from '../components/Toast';
 import { useAdminLayout } from '../contexts/AdminLayoutContext';
 import useToast from '../hooks/useToast';
 import { getCategoryLabel, formatDate, categoryOptions } from '../constants/productData';
-import { getAllProductsFiltered, deleteProduct, updateProduct } from '../api/api';
+import { getAllProductsFiltered, deleteProduct, updateProduct, downloadSampleExcel, uploadProductsExcel } from '../api/api';
 
 const UpdateModal = ({ isOpen, onClose, onSave, product }) => {
   console.log('UpdateModal props:', { isOpen, product: product?.id, productName: product?.name });
@@ -233,9 +233,41 @@ const ProductsPage = () => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ src: '', alt: '' });
   const [totalCount, setTotalCount] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
 
   const { openFilterSidebar } = useAdminLayout();
   const { toasts, showSuccess, showError, removeToast } = useToast();
+
+  const handleDownloadSample = async () => {
+    try {
+      await downloadSampleExcel();
+      showSuccess("Sample Excel downloaded successfully!");
+    } catch (err) {
+      console.error("Download failed:", err);
+      showError("Failed to download sample report");
+    }
+  };
+
+  const handleUploadExcel = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const response = await uploadProductsExcel(file);
+      showSuccess(response.data.message || "Products uploaded successfully!");
+      const res = await getAllProductsFiltered({ page: currentPage, pageSize: itemsPerPage });
+      setProducts(res.data);
+      setTotalCount(res.totalCount);
+    } catch (err) {
+      console.error("Upload failed:", err);
+      showError(err?.response?.data?.message || "Upload failed!");
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      e.target.value = '';
+    }
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -338,7 +370,6 @@ const ProductsPage = () => {
     setModalMode('edit');
     setIsModalOpen(true);
   };
-
 
   const handleDeleteProduct = async (productId) => {
     const product = products.find(p => p.id === productId);
@@ -495,6 +526,34 @@ const ProductsPage = () => {
             Manage your feed inventory - Poultry, Shrimp, and Fish feed products
           </p>
         </div>
+        <div className={styles.productsTopBarActions}>
+          <button
+            className={styles.productsAddButton}
+            onClick={handleAddProduct}
+          >
+            <FiPlus /> Add Product
+          </button>
+
+          {/* Download Sample */}
+          <button
+            className={styles.productsAddButton}
+            onClick={handleDownloadSample}
+          >
+            <FiDownload /> Sample Excel
+          </button>
+
+          {/* Upload Excel */}
+          <label className={styles.productsAddButton}>
+            <FiUpload /> {isUploading ? 'Uploading...' : 'Bulk Upload'}
+            <input
+              type="file"
+              accept=".xlsx,.xls"
+              style={{ display: 'none' }}
+              onChange={handleUploadExcel}
+              disabled={isUploading}
+            />
+          </label>
+        </div>
       </div>
 
       {/* Top Bar Controls */}
@@ -541,16 +600,6 @@ const ProductsPage = () => {
             <option value="stockQuantity-asc">Stock Low to High</option>
             <option value="stockQuantity-desc">Stock High to Low</option>
           </select>
-        </div>
-
-        <div className={styles.productsTopBarActions}>
-          <button
-            className={styles.productsAddButton}
-            onClick={handleAddProduct}
-          >
-            <FiPlus />
-            Add Product
-          </button>
         </div>
       </div>
 
@@ -720,7 +769,6 @@ const ProductsPage = () => {
           mode={modalMode}
         />
       )}
-
 
       {/* Image Modal */}
       <ImageModal

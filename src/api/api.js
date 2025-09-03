@@ -251,3 +251,29 @@ export const deleteFlashSale = async (id) => {
     throw error.response?.data || error;
   }
 };
+
+// Download sample Excel
+export const downloadSampleExcel = async () => {
+  const response = await axiosInstance.get('/BulkUpload/DownloadSampleExcel', {
+    responseType: 'blob',
+  });
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', 'Sample_Product_BulkUpload.xlsx');
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+};
+
+// Upload Excel file
+export const uploadProductsExcel = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return axiosInstance.post('/BulkUpload/UploadProductsExcel', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+};

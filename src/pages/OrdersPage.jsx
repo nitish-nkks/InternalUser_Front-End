@@ -13,10 +13,10 @@ import {
   formatCurrency,
   getOrderStatusColor,
 } from '../constants/orderData';
-import { 
-  getAllOrders, 
-  updateOrderStatus, 
-  deleteOrder 
+import {
+  getAllOrders,
+  updateOrderStatus,
+  deleteOrder
 } from '../api/api';
 
 const OrdersPage = () => {
@@ -191,10 +191,10 @@ const OrdersPage = () => {
       setLoading(true);
       try {
         await deleteOrder(orderId);
-        
+
         // Update local state
         setOrders(prev => prev.filter(o => o.id !== orderId));
-        
+
         showSuccess(`Order "${order?.id}" deleted successfully!`);
       } catch (error) {
         showError("Failed to delete order");
@@ -210,12 +210,12 @@ const OrdersPage = () => {
     try {
       // Update only the order status via API - send as string statusDto
       await updateOrderStatus(orderData.id, orderData.orderStatus);
-      
+
       // Update local state
       setOrders(prev => prev.map(o =>
         o.id === orderData.id ? { ...o, orderStatus: orderData.orderStatus } : o
       ));
-      
+
       showSuccess(`Order "${orderData.id}" status updated successfully!`);
     } catch (error) {
       showError("Failed to update order status");
@@ -298,7 +298,7 @@ const OrdersPage = () => {
             Track and manage customer orders, payments, and shipments
           </p>
         </div>
-        <button 
+        <button
           className={styles.refreshButton}
           onClick={fetchOrders}
           disabled={loading}
