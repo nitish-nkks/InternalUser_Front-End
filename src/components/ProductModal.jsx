@@ -461,55 +461,55 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add', o
               <h4>Instructions:</h4>
               <ul className={styles.instructionsList}>
                 <li>
-                  <strong>Product Name*</strong>: Product name. Cannot be empty or duplicate.
+                  <strong>Product Name<span className={styles.required}>*</span></strong>: Product name. Cannot be empty or duplicate.
                 </li>
                 <li>
-                  <strong>ProductCode*</strong>: Unique product code (e.g., PRD001).
+                  <strong>ProductCode<span className={styles.required}>*</span></strong>: Unique product code (e.g., PRD001).
                 </li>
                 <li>
-                  <strong>Description*</strong>: Short description of the product.
+                  <strong>Description<span className={styles.required}>*</span></strong>: Short description of the product.
                 </li>
                 <li>
-                  <strong>Price*</strong>: Numeric, must be greater than 0.
+                  <strong>Price<span className={styles.required}>*</span></strong>: Numeric, must be greater than 0.
                 </li>
                 <li>
-                  <strong>StockQuantity*</strong>: Integer, must be ≥ 0.
+                  <strong>StockQuantity<span className={styles.required}>*</span></strong>: Integer, must be ≥ 0.
                 </li>
                 <li>
-                  <strong>CategoryName*</strong>: Must match an existing active category in the database.
+                  <strong>CategoryName<span className={styles.required}>*</span></strong>: Must match an existing active category in the database.
                 </li>
                 <li>
-                  <strong>MinOrderQuantity*</strong>: Integer, must be {'>'} 0.
+                  <strong>MinOrderQuantity<span className={styles.required}>*</span></strong>: Integer, must be {'>'} 0.
                 </li>
                 <li>
-                  <strong>Image*</strong>: Main thumbnail image filename.
+                  <strong>Image<span className={styles.required}>*</span></strong>: Main thumbnail image filename.
                 </li>
                 <li>
-                  <strong>ProductType*</strong>: Must be one of: <em>Simple, Pack, Combo</em>.
+                  <strong>ProductType<span className={styles.required}>*</span></strong>: Must be one of: <em>Simple, Pack, Combo</em>.
                 </li>
                 <li>
-                  <strong>UOM*</strong>: Must be one of: <em>KG, MT, EA, BAG, Box, Carton, Tin, SET, TO, Litre</em>.
+                  <strong>UOM<span className={styles.required}>*</span></strong>: Must be one of: <em>KG, MT, EA, BAG, Box, Carton, Tin, SET, TO, Litre</em>.
                 </li>
                 <li>
-                  <strong>Weight*</strong>: Decimal, must be {'>'}  0.
+                  <strong>Weight<span className={styles.required}>*</span></strong>: Decimal, must be {'>'}  0.
                 </li>
                 <li>
-                  <strong>PackSize*</strong>: Integer, must be {'>'} 0.
+                  <strong>PackSize<span className={styles.required}>*</span></strong>: Integer, must be {'>'} 0.
                 </li>
                 <li>
-                  <strong>FormType*</strong>: Must be one of: <em>Pellet, Powder, Liquid, Tablets</em>.
+                  <strong>FormType<span className={styles.required}>*</span></strong>: Must be one of: <em>Pellet, Powder, Liquid, Tablets</em>.
                 </li>
                 <li>
-                  <strong>ShelfLifeMonths*</strong>: Integer, must be {'>'} 0.
+                  <strong>ShelfLifeMonths<span className={styles.required}>*</span></strong>: Integer, must be {'>'} 0.
                 </li>
                 <li>
-                  <strong>DosageApplication*</strong>: Usage instructions (max 300 chars).
+                  <strong>DosageApplication<span className={styles.required}>*</span></strong>: Usage instructions (max 300 chars).
                 </li>
                 <li>
-                  <strong>HSN/SAC Code*</strong>: Tax classification code (max 100 chars).
+                  <strong>HSN/SAC Code<span className={styles.required}>*</span></strong>: Tax classification code (max 100 chars).
                 </li>
                 <li>
-                  <strong>TaxRate*</strong>: Decimal, must be between 0 and 100.
+                  <strong>TaxRate<span className={styles.required}>*</span></strong>: Decimal, must be between 0 and 100.
                 </li>
                 <li>
                   <strong>DiscountPercentage</strong>: Decimal, less than 100.

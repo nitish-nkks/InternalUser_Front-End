@@ -71,17 +71,20 @@ const ProfileProvider = ({ children }) => {
           const response = await getInternalUserDetails(storedUser.id);
           const userData = response.data.data;
 
+          const roleMapping = {
+            'Admin': 'Admin',
+            'Staff': 'Staff',
+            'Manager': 'Manager',
+            'Support': 'Support',
+            'Sales': 'Sales'
+          };
+
           const mappedProfile = {
             ...storedUser, 
             employee_id: userData.employeeId,
             name: userData.userName,
             email: userData.email,
-            role: userData.role === 0 ? 'Admin' :
-                 userData.role === 1 ? 'Staff' :
-                 userData.role === 2 ? 'Manager' :
-                 userData.role === 3 ? 'Support' :
-                 userData.role === 4 ? 'Sales' :
-                 'Unknown Role',
+            role: roleMapping[userData.role] || 'Unknown Role',
             designation: userData.designation,
             lastloginat: userData.lastLoginAt,
             settings: {

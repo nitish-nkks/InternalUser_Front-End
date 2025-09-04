@@ -381,6 +381,7 @@
   cursor: not-allowed;
   transform: none !important;
 }
+
 .instructionsList {
   padding: 12px 16px;
   border-top: 1px solid #f0f0f0;
@@ -394,24 +395,17 @@
   font-size: 14px;
   color: #167037;
 }
-.downloadSampleButton {
-  padding: 10px 16px;
-  border: 1px solid #d9d9d9;
-  background: #f5f5f5;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #333;
-  cursor: pointer;
-  transition: all 0.3s;
-  margin-top: 20px;
-  margin-bottom: 10px;
+
+.uploadContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  justify-content: center;
 }
 
-.downloadSampleButton:hover {
-  background: #e8e8e8;
-  border-color: #ccc;
-}
-.chooseFile{
+.chooseFile {
   padding: 10px 16px;
   border: 1px solid #d9d9d9;
   background: #f5f5f5;
@@ -422,11 +416,25 @@
   transition: all 0.3s;
   display: inline-flex;
   align-items: center;
+  width: 550px;
+  height: 200px;
+  justify-content: center;
 }
 
-.chooseFile:hover {
-  background: #e8e8e8;
-  border-color: #ccc;
+.downloadSampleButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 1px solid #d9d9d9;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin: 0 auto;
 }
 
 /* Responsive Design */
@@ -434,48 +442,48 @@
   .modalOverlay {
     padding: 16px;
   }
-  
+
   .modal {
     max-width: 90%;
     max-height: 85vh;
   }
-  
+
   .modalHeader {
     padding: 22px 28px;
   }
-  
+
   .modalTitle {
     font-size: 22px;
   }
-  
+
   .modalBody {
     padding: 28px;
   }
-  
+
   .form {
     gap: 20px;
   }
-  
+
   .formGroup {
     gap: 6px;
   }
-  
+
   .formRow {
     gap: 14px;
   }
-  
+
   .input,
   .select,
   .textarea {
     padding: 11px 14px;
     font-size: 13px;
   }
-  
+
   .imagePreviewGrid {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 10px;
   }
-  
+
   .modalFooter {
     padding: 22px 28px;
   }
@@ -485,44 +493,44 @@
   .modalOverlay {
     padding: 8px;
   }
-  
+
   .modal {
     max-width: 100%;
     max-height: 95vh;
     border-radius: 16px;
   }
-  
+
   .modalHeader {
     padding: 18px 20px;
   }
-  
+
   .modalTitle {
     font-size: 20px;
   }
-  
+
   .closeButton {
     width: 36px;
     height: 36px;
     font-size: 16px;
   }
-  
+
   .modalBody {
     padding: 20px;
   }
-  
+
   .form {
     gap: 18px;
   }
-  
+
   .formRow {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
+
   .label {
     font-size: 13px;
   }
-  
+
   .input,
   .select,
   .textarea {
@@ -530,38 +538,38 @@
     font-size: 14px;
     border-radius: 10px;
   }
-  
+
   .textarea {
     min-height: 80px;
   }
-  
+
   .imageUploadArea {
     padding: 20px;
   }
-  
+
   .uploadIcon {
     font-size: 28px;
   }
-  
+
   .uploadText {
     font-size: 13px;
   }
-  
+
   .uploadSubtext {
     font-size: 11px;
   }
-  
+
   .imagePreviewGrid {
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 8px;
   }
-  
+
   .modalFooter {
     padding: 18px 20px;
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .button {
     width: 100%;
     justify-content: center;
@@ -575,37 +583,37 @@
   .modalOverlay {
     padding: 4px;
   }
-  
+
   .modal {
     border-radius: 12px;
   }
-  
+
   .modalHeader {
     padding: 16px 18px;
   }
-  
+
   .modalTitle {
     font-size: 18px;
   }
-  
+
   .closeButton {
     width: 32px;
     height: 32px;
     font-size: 14px;
   }
-  
+
   .modalBody {
     padding: 16px;
   }
-  
+
   .form {
     gap: 16px;
   }
-  
+
   .label {
     font-size: 12px;
   }
-  
+
   .input,
   .select,
   .textarea {
@@ -613,41 +621,41 @@
     font-size: 13px;
     border-radius: 8px;
   }
-  
+
   .textarea {
     min-height: 70px;
   }
-  
+
   .imageUploadArea {
     padding: 16px;
   }
-  
+
   .uploadIcon {
     font-size: 24px;
   }
-  
+
   .uploadText {
     font-size: 12px;
   }
-  
+
   .uploadSubtext {
     font-size: 10px;
   }
-  
+
   .imagePreviewGrid {
     grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
   }
-  
+
   .removeImageButton {
     width: 20px;
     height: 20px;
     font-size: 10px;
   }
-  
+
   .modalFooter {
     padding: 16px 18px;
   }
-  
+
   .button {
     min-height: 44px;
     font-size: 14px;
@@ -659,80 +667,80 @@
   .modalOverlay {
     padding: 2px;
   }
-  
+
   .modal {
     border-radius: 10px;
     max-height: 98vh;
   }
-  
+
   .modalHeader {
     padding: 14px 16px;
   }
-  
+
   .modalTitle {
     font-size: 16px;
   }
-  
+
   .closeButton {
     width: 28px;
     height: 28px;
     font-size: 12px;
   }
-  
+
   .modalBody {
     padding: 14px;
   }
-  
+
   .form {
     gap: 14px;
   }
-  
+
   .label {
     font-size: 11px;
   }
-  
+
   .input,
   .select,
   .textarea {
     padding: 9px 10px;
     font-size: 12px;
   }
-  
+
   .textarea {
     min-height: 60px;
   }
-  
+
   .imageUploadArea {
     padding: 12px;
   }
-  
+
   .uploadIcon {
     font-size: 20px;
   }
-  
+
   .uploadText {
     font-size: 11px;
   }
-  
+
   .uploadSubtext {
     font-size: 9px;
   }
-  
+
   .imagePreviewGrid {
     grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
     gap: 6px;
   }
-  
+
   .removeImageButton {
     width: 18px;
     height: 18px;
     font-size: 9px;
   }
-  
+
   .modalFooter {
     padding: 14px 16px;
   }
-  
+
   .button {
     min-height: 42px;
     font-size: 13px;
@@ -744,37 +752,38 @@
   .modal {
     border-radius: 8px;
   }
-  
+
   .modalHeader {
     padding: 12px 14px;
   }
-  
+
   .modalTitle {
     font-size: 15px;
   }
-  
+
   .modalBody {
     padding: 12px;
   }
-  
+
   .form {
     gap: 12px;
   }
-  
+
   .imagePreviewGrid {
     grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
   }
-  
+
   .modalFooter {
     padding: 12px 14px;
   }
-  
+
   .button {
     min-height: 40px;
     font-size: 12px;
     padding: 8px 14px;
   }
 }
+
 .checkboxLabel {
   display: flex;
   align-items: center;
@@ -789,4 +798,8 @@
   width: 16px;
   height: 16px;
   accent-color: #1890ff;
+}
+
+.required {
+  color: rgb(224, 74, 74);
 }
