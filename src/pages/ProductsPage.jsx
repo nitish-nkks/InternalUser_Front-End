@@ -1023,6 +1023,7 @@ const ProductsPage = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
+  const [uploadErrors, setUploadErrors] = useState([]);
 
 
   const { openFilterSidebar } = useAdminLayout();
@@ -1052,7 +1053,11 @@ const ProductsPage = () => {
       setIsBulkUploadModalOpen(false); // Close modal on success
     } catch (err) {
       console.error("Upload failed:", err);
-      showError(err?.response?.data?.message || "Upload failed!");
+      if (err.response && err.response.data && err.response.data.errors) {
+        setUploadErrors(err.response.data.errors);
+      } else {
+        showError(err?.response?.data?.message || "Upload failed!");
+      }
     } finally {
       setIsUploading(false);
       // Reset file input
@@ -1557,6 +1562,8 @@ const ProductsPage = () => {
           onUploadExcel={handleUploadExcel}
           isUploading={isUploading}
           mode="bulkUpload"
+          uploadErrors={uploadErrors}
+          clearUploadErrors={() => setUploadErrors([])}
         />
       )}
 

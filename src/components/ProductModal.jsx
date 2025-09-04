@@ -43,7 +43,7 @@ const renderCategoryOptions = (categories, prefix = "") => {
   ));
 };
 
-const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add', onDownloadSample, onUploadExcel, isUploading }) => {
+const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add', onDownloadSample, onUploadExcel, isUploading, uploadErrors, clearUploadErrors }) => {
   const [formData, setFormData] = useState({
     // Basic Product Fields
     name: '',
@@ -457,6 +457,21 @@ const ProductModal = ({ isOpen, onClose, onSave, product = null, mode = 'add', o
             >
               <FiDownload /> Download Sample
             </button>
+            {uploadErrors && uploadErrors.length > 0 && (
+              <div className={styles.errorContainer}>
+                <h4 className={styles.errorTitle}>Upload Failed</h4>
+                <ul className={styles.errorList}>
+                  {uploadErrors.map((error, index) => (
+                    <li key={index} className={styles.errorItem}>
+                      {error}
+                    </li>
+                  ))}
+                </ul>
+                <button onClick={clearUploadErrors} className={styles.clearButton}>Clear Errors</button>
+              </div>
+            )}
+            
+            
             <div className={styles.instructions}>
               <h4>Instructions:</h4>
               <ul className={styles.instructionsList}>

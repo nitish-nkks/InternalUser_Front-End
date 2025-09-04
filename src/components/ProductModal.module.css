@@ -803,3 +803,40 @@
 .required {
   color: rgb(224, 74, 74);
 }
+
+.errorContainer {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #fff0f0;
+  border: 1px solid #ffcccc;
+  border-radius: 8px;
+}
+
+.errorTitle {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #d93025;
+}
+
+.errorList {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.errorItem {
+  font-size: 14px;
+  color: #d93025;
+  margin-bottom: 8px;
+}
+
+.clearButton {
+  background-color: #d93025;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
